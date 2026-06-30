@@ -1,0 +1,215 @@
+<div class="min-h-screen bg-[#0b0f12] text-gray-100">
+  <header class="border-b border-emerald-800/30 bg-[#0f1418]/95 backdrop-blur">
+    <div class="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
+      <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3">
+          <div class="h-3.5 w-3.5 rounded-full bg-[#2bc48a] shadow-[0_0_12px_#2bc48a]"></div>
+          <span class="text-lg font-semibold tracking-wide text-emerald-300">LogiRed</span>
+        </div>
+        <nav class="flex items-center gap-8 text-sm text-gray-400">
+          <a class="border-b-2 border-[#2bc48a] pb-2 font-medium text-emerald-300">Validacion</a>
+          <a class="pb-2 transition hover:text-gray-200">Gestion de Flota</a>
+          <a class="pb-2 transition hover:text-gray-200">Operaciones</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-3 rounded-full border border-white/10 bg-[#14191c] px-3 py-1.5">
+        <img
+          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80"
+          alt="Perfil"
+          class="h-8 w-8 rounded-full object-cover"
+        />
+        <span class="text-sm text-gray-300">Admin</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-[1440px] flex-col gap-6 px-6 py-6">
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+        <p class="font-serif text-sm text-gray-400">Total de carros</p>
+        <p class="mt-2 text-3xl font-semibold text-emerald-300">
+          {{ state.pendingDrivers().length }}
+        </p>
+      </article>
+      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+        <p class="font-serif text-sm text-gray-400">Aprobados</p>
+        <p class="mt-2 text-3xl font-semibold text-emerald-300">0</p>
+      </article>
+      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+        <p class="font-serif text-sm text-gray-400">Pendientes</p>
+        <p class="mt-2 text-3xl font-semibold text-amber-300">
+          {{ state.pendingDrivers().length }}
+        </p>
+      </article>
+      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+        <p class="font-serif text-sm text-gray-400">Rechazados</p>
+        <p class="mt-2 text-3xl font-semibold text-rose-400">0</p>
+      </article>
+    </section>
+
+    @if (state.error()) {
+      <div class="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+        {{ state.error() }}
+      </div>
+    }
+
+    <section class="grid gap-6 lg:grid-cols-[350px_1fr]">
+      <aside class="rounded-2xl border border-white/10 bg-[#14191c] p-4 shadow-xl shadow-black/30">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-serif text-lg text-white">Pendientes</h2>
+          <span class="rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-300">
+            {{ state.pendingDrivers().length }} conductores
+          </span>
+        </div>
+
+        <div class="space-y-3">
+          @for (driver of state.pendingDrivers(); track driver.id_user) {
+            <button
+              type="button"
+              class="w-full rounded-xl border px-3 py-3 text-left transition"
+              [class.border-emerald-500/50]="state.selectedDriver()?.id_user === driver.id_user"
+              [class.bg-emerald-500/10]="state.selectedDriver()?.id_user === driver.id_user"
+              [class.border-white/10]="state.selectedDriver()?.id_user !== driver.id_user"
+              [class.bg-[#0f1418]]="state.selectedDriver()?.id_user !== driver.id_user"
+              (click)="state.selectDriver(driver.id_user)"
+            >
+              <div class="flex items-start gap-3">
+                <img
+                  [src]="driver.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80'"
+                  [alt]="driver.name"
+                  class="h-11 w-11 rounded-full object-cover"
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-white">
+                    {{ driver.name }} {{ driver.lastname }}
+                  </p>
+                  <p class="truncate text-xs text-gray-400">{{ driver.email }}</p>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">
+                      INE Pending
+                    </span>
+                    <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] text-rose-300">
+                      Review Required
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          } @empty {
+            <div class="rounded-xl border border-white/10 bg-[#0f1418] px-4 py-6 text-center text-sm text-gray-400">
+              No hay conductores pendientes por validar.
+            </div>
+          }
+        </div>
+      </aside>
+
+      <article class="rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-xl shadow-black/30">
+        @if (state.selectedDriver(); as driver) {
+          <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <img
+                [src]="driver.image_url || 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=160&q=80'"
+                [alt]="driver.name"
+                class="h-20 w-20 rounded-2xl border border-white/10 object-cover"
+              />
+              <div>
+                <h2 class="font-serif text-2xl text-white">{{ driver.name }} {{ driver.lastname }}</h2>
+                <p class="text-sm text-gray-400">{{ driver.email }}</p>
+                <p class="text-sm text-gray-400">{{ driver.numberphone }}</p>
+                <p class="text-sm text-gray-500">Nacimiento: {{ driver.birthdate || 'Sin registro' }}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                (click)="rejectSelectedDriver()"
+                [disabled]="state.isLoading()"
+                class="rounded-lg border border-rose-800/60 px-4 py-2 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
+              >
+                Reject
+              </button>
+              <button
+                type="button"
+                (click)="state.approveSelectedDriver()"
+                [disabled]="state.isLoading()"
+                class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12] transition hover:bg-[#26af7b] disabled:opacity-50"
+              >
+                Approve Driver
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-6 grid gap-3 md:grid-cols-3">
+            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">INE</p>
+              <img
+                [src]="getDocumentByType(1)?.url || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=640&q=80'"
+                alt="INE"
+                class="h-32 w-full rounded-lg object-cover"
+              />
+            </div>
+            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Placas CDMX</p>
+              <img
+                [src]="getDocumentByType(2)?.url || driver.cars[0]?.plates_image || 'https://images.unsplash.com/photo-1556122071-e404eaedb77f?auto=format&fit=crop&w=640&q=80'"
+                alt="Placas"
+                class="h-32 w-full rounded-lg object-cover"
+              />
+            </div>
+            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Comprobante CFE</p>
+              <img
+                [src]="getDocumentByType(3)?.url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80'"
+                alt="Comprobante"
+                class="h-32 w-full rounded-lg object-cover"
+              />
+            </div>
+          </div>
+
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="font-serif text-xl text-white">Carro</h3>
+            <input
+              type="text"
+              placeholder="Motivo de rechazo"
+              class="w-full max-w-xs rounded-lg border border-white/10 bg-[#0f1418] px-3 py-2 text-sm text-white outline-none focus:border-rose-500/50"
+              [(ngModel)]="rejectReason"
+            />
+          </div>
+
+          @if (driver.cars.length > 0) {
+            <div class="grid gap-3 md:grid-cols-3">
+              <img
+                [src]="driver.cars[0].frontview_image || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=640&q=80'"
+                alt="Vista frontal"
+                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+              />
+              <img
+                [src]="driver.cars[0].leftview_image || driver.cars[0].rightview_image || 'https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=640&q=80'"
+                alt="Vista lateral"
+                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+              />
+              <div class="relative">
+                <img
+                  [src]="driver.cars[0].backview_image || 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=640&q=80'"
+                  alt="Vista trasera"
+                  class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                />
+                <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 text-xl font-semibold text-white">
+                  +3
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="rounded-xl border border-white/10 bg-[#0f1418] px-4 py-6 text-center text-sm text-gray-400">
+              Este conductor no tiene vehiculos registrados.
+            </div>
+          }
+        } @else {
+          <div class="flex min-h-[420px] items-center justify-center rounded-xl border border-white/10 bg-[#0f1418] text-gray-400">
+            Selecciona un conductor para ver su informacion.
+          </div>
+        }
+      </article>
+    </section>
+  </main>
+</div>

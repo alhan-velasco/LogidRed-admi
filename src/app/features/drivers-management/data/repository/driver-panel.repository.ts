@@ -1,12 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, map, of } from 'rxjs';
+import { API_BASE_URL } from '../../../../core/config/api.config';
 import { DriverDetailDTO, PendingDriverDTO } from '../models/driver-panel.dto';
 
 @Injectable({ providedIn: 'root' })
 export class DriverPanelRepository {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://databaselogired.online';
+  private readonly baseUrl = API_BASE_URL;
 
   getPendingDrivers(): Observable<PendingDriverDTO[]> {
     return this.http

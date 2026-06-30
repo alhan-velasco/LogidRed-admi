@@ -1,10 +1,14 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { DriverPanelRepository } from '../../data/repository/driver-panel.repository';
 import { DriverDetailDTO, PendingDriverDTO } from '../../data/models/driver-panel.dto';
+import { AuthSessionService } from '../../../../core/auth/auth-session.service';
 
 @Injectable()
 export class DriversPanelState {
   private readonly repository = inject(DriverPanelRepository);
+  private readonly session = inject(AuthSessionService);
+  private readonly router = inject(Router);
 
   readonly pendingDrivers = signal<PendingDriverDTO[]>([]);
   readonly selectedDriver = signal<DriverDetailDTO | null>(null);
@@ -12,6 +16,12 @@ export class DriversPanelState {
   readonly error = signal<string | null>(null);
 
   loadPendingDrivers(): void {
+    if (!this.session.isAuthenticated()) {
+      this.error.set('Sesión no válida. Inicia sesión nuevamente.');
+      void this.router.navigate(['/login']);
+      return;
+    }
+
     this.isLoading.set(true);
     this.error.set(null);
 
