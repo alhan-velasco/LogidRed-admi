@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DriversPanelState } from '../../state/drivers-panel.state';
 import { DriverDocumentDTO } from '../../../data/models/driver-panel.dto';
 
 @Component({
   selector: 'app-validation',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
   providers: [DriversPanelState],
   templateUrl: './validation.component.html',
 })

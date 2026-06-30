@@ -7,9 +7,19 @@
           <span class="text-lg font-semibold tracking-wide text-emerald-300">LogiRed</span>
         </div>
         <nav class="flex items-center gap-8 text-sm text-gray-400">
-          <a class="border-b-2 border-[#2bc48a] pb-2 font-medium text-emerald-300">Validacion</a>
-          <a class="pb-2 transition hover:text-gray-200">Gestion de Flota</a>
-          <a class="pb-2 transition hover:text-gray-200">Operaciones</a>
+          <a 
+            routerLink="/admin/drivers/pending" 
+            routerLinkActive="border-b-2 border-[#2bc48a] text-emerald-300 font-bold"
+            [routerLinkActiveOptions]="{exact: true}"
+            class="pb-2 transition hover:text-gray-200">
+            Validación
+          </a>
+          <a 
+            routerLink="/admin/security" 
+            routerLinkActive="border-b-2 border-[#2bc48a] text-emerald-300 font-bold"
+            class="pb-2 transition hover:text-gray-200">
+            Seguridad
+          </a>
         </nav>
       </div>
       <div class="flex items-center gap-3 rounded-full border border-white/10 bg-[#14191c] px-3 py-1.5">
