@@ -31,4 +31,10 @@ export class ValidationComponent implements OnInit {
       .selectedDriver()
       ?.documents.find((document) => document.id_document_type === typeId);
   }
+
+  getSelectedDriverStatus(): 'pending' | 'approved' | 'rejected' | undefined {
+    const selected = this.state.selectedDriver();
+    if (!selected) return undefined;
+    return this.state.allDrivers().find((d) => d.id_user === selected.id_user)?.status;
+  }
 }
