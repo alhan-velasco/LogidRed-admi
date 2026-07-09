@@ -5,23 +5,14 @@
       
       <!-- Logo e Identidad (Izquierda) -->
       <div class="flex items-center gap-3">
-        <!-- Logo SVG / Formas -->
-        <div class="relative w-16 h-14 shrink-0">
-          <div class="w-4 h-10 left-[4px] top-[8px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-          <div class="w-3.5 h-10 left-[26px] top-[10px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-          <div class="w-2 h-1 left-[20px] top-[12px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2.5 h-1 left-[32px] top-[16px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2 h-1 left-[24px] top-[18px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2.5 h-1 left-[28px] top-[22px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-5.5 h-5 left-[12px] top-[22px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-        </div>
+        <img src="assets/brand/logo.svg" class="h-10 w-auto shrink-0" alt="LogiRed Logo" />
         <div class="flex flex-col justify-center">
           <span class="text-[#1D6B4F] text-2xl font-bold font-['Outfit'] leading-none">LogiRed</span>
           <span class="text-[#1D6B4F] text-xs font-bold font-['Outfit'] leading-none mt-1 uppercase tracking-wider">Administrador</span>
         </div>
       </div>
       
-      <!-- Navegación Central (Validación y Seguridad) -->
+      <!-- Navegación Central (Validación, Seguridad, Personal) -->
       <nav class="flex items-center gap-8">
         <a 
           routerLink="/admin/drivers/pending" 
@@ -30,12 +21,20 @@
           class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
           Validación
         </a>
-        <a 
-          routerLink="/admin/security" 
-          routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
-          class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
-          Seguridad
-        </a>
+        @if (session.isAdmin()) {
+          <a 
+            routerLink="/admin/security" 
+            routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
+            class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
+            Seguridad
+          </a>
+          <a 
+            routerLink="/admin/users" 
+            routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
+            class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
+            Personal
+          </a>
+        }
       </nav>
 
       <!-- Perfil y Divisor (Derecha) -->

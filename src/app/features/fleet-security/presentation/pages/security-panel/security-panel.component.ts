@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SecurityState } from '../../state/security.state';
+import { AuthSessionService } from '../../../../../core/auth/auth-session.service';
 
 @Component({
   selector: 'app-security-panel',
@@ -12,7 +13,8 @@ import { SecurityState } from '../../state/security.state';
   templateUrl: './security-panel.component.html',
 })
 export class SecurityPanelComponent implements OnInit {
-  constructor(public state: SecurityState) {}
+  readonly state = inject(SecurityState);
+  readonly session = inject(AuthSessionService);
 
   ngOnInit(): void {
     // Inicialmente no cargamos datos hasta que se ingrese la carpeta de investigación/oficio.

@@ -5,23 +5,14 @@
       
       <!-- Logo e Identidad (Izquierda) -->
       <div class="flex items-center gap-3">
-        <!-- Logo SVG / Formas -->
-        <div class="relative w-16 h-14 shrink-0">
-          <div class="w-4 h-10 left-[4px] top-[8px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-          <div class="w-3.5 h-10 left-[26px] top-[10px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-          <div class="w-2 h-1 left-[20px] top-[12px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2.5 h-1 left-[32px] top-[16px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2 h-1 left-[24px] top-[18px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-2.5 h-1 left-[28px] top-[22px] absolute bg-[#1D6B4F]"></div>
-          <div class="w-5.5 h-5 left-[12px] top-[22px] absolute bg-[#1D6B4F] rounded-[2px]"></div>
-        </div>
+        <img src="assets/brand/logo.svg" class="h-10 w-auto shrink-0" alt="LogiRed Logo" />
         <div class="flex flex-col justify-center">
           <span class="text-[#1D6B4F] text-2xl font-bold font-['Outfit'] leading-none">LogiRed</span>
           <span class="text-[#1D6B4F] text-xs font-bold font-['Outfit'] leading-none mt-1 uppercase tracking-wider">Administrador</span>
         </div>
       </div>
       
-      <!-- Navegación Central (Validación y Seguridad) -->
+      <!-- Navegación Central (Validación, Seguridad, Personal) -->
       <nav class="flex items-center gap-8">
         <a 
           routerLink="/admin/drivers/pending" 
@@ -30,12 +21,20 @@
           class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
           Validación
         </a>
-        <a 
-          routerLink="/admin/security" 
-          routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
-          class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
-          Seguridad
-        </a>
+        @if (session.isAdmin()) {
+          <a 
+            routerLink="/admin/security" 
+            routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
+            class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
+            Seguridad
+          </a>
+          <a 
+            routerLink="/admin/users" 
+            routerLinkActive="bg-[#003C2A]/26 outline outline-1 outline-[#1D6B4F]/30"
+            class="px-5 py-2 rounded-[3px] text-white text-xl font-bold font-['Outfit'] transition hover:bg-white/5">
+            Personal
+          </a>
+        }
       </nav>
 
       <!-- Perfil y Divisor (Derecha) -->
@@ -122,8 +121,8 @@
     }
 
     <section class="grid gap-6 lg:grid-cols-[350px_1fr]">
-      <aside class="rounded-2xl border border-white/10 bg-[#14191c] p-4 shadow-xl shadow-black/30">
-        <div class="mb-4 flex items-center justify-between">
+      <aside class="rounded-2xl border border-white/10 bg-[#14191c] p-4 shadow-xl shadow-black/30 h-[calc(100vh-220px)] min-h-[500px] flex flex-col">
+        <div class="mb-4 flex items-center justify-between shrink-0">
           <h2 class="font-serif text-lg text-white">
             @if (state.activeFilter() === 'all') { Conductores }
             @else if (state.activeFilter() === 'approved') { Aprobados }
@@ -135,7 +134,7 @@
           </span>
         </div>
 
-        <div class="space-y-3">
+        <div class="space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar">
           @for (driver of state.filteredDrivers(); track driver.id_user) {
             @if (state.selectedDriver()?.id_user === driver.id_user) {
               <!-- Tarjeta Seleccionada (Figma) -->
@@ -240,7 +239,9 @@
               <img
                 [src]="driver.image_url || 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=160&q=80'"
                 [alt]="driver.name"
-                class="h-20 w-20 rounded-2xl border border-white/10 object-cover"
+                class="h-20 w-20 rounded-2xl border border-white/10 object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="activeModalImage.set(driver.image_url || 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=160&q=80')"
+                title="Expandir foto de perfil"
               />
               <div>
                 <h2 class="font-serif text-2xl text-white">{{ driver.name }} {{ driver.lastname }}</h2>
@@ -255,7 +256,7 @@
                   type="button"
                   (click)="rejectSelectedDriver()"
                   [disabled]="state.isLoading()"
-                  class="rounded-lg border border-rose-800/60 px-4 py-2 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
+                  class="rounded-lg border border-rose-800/60 px-4 py-2 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50 cursor-pointer"
                 >
                   Reject
                 </button>
@@ -263,7 +264,7 @@
                   type="button"
                   (click)="state.approveSelectedDriver()"
                   [disabled]="state.isLoading()"
-                  class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12] transition hover:bg-[#26af7b] disabled:opacity-50"
+                  class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12] transition hover:bg-[#26af7b] disabled:opacity-50 cursor-pointer border-0 outline-none"
                 >
                   Approve Driver
                 </button>
@@ -288,7 +289,9 @@
               <img
                 [src]="getDocumentByType(1)?.url || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=640&q=80'"
                 alt="INE"
-                class="h-32 w-full rounded-lg object-cover"
+                class="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="activeModalImage.set(getDocumentByType(1)?.url || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=640&q=80')"
+                title="Expandir INE"
               />
             </div>
             <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
@@ -296,7 +299,9 @@
               <img
                 [src]="getDocumentByType(2)?.url || driver.cars[0]?.plates_image || 'https://images.unsplash.com/photo-1556122071-e404eaedb77f?auto=format&fit=crop&w=640&q=80'"
                 alt="Placas"
-                class="h-32 w-full rounded-lg object-cover"
+                class="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="activeModalImage.set(getDocumentByType(2)?.url || driver.cars[0]?.plates_image || 'https://images.unsplash.com/photo-1556122071-e404eaedb77f?auto=format&fit=crop&w=640&q=80')"
+                title="Expandir Placas"
               />
             </div>
             <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
@@ -304,7 +309,9 @@
               <img
                 [src]="getDocumentByType(3)?.url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80'"
                 alt="Comprobante"
-                class="h-32 w-full rounded-lg object-cover"
+                class="h-32 w-full rounded-lg object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="activeModalImage.set(getDocumentByType(3)?.url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80')"
+                title="Expandir Comprobante"
               />
             </div>
           </div>
@@ -324,21 +331,25 @@
               <img
                 [src]="driver.cars[0].frontview_image || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=640&q=80'"
                 alt="Vista frontal"
-                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                class="h-36 w-full rounded-xl border border-white/10 object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="openCarCarousel(driver.cars[0], 0)"
+                title="Ver galería frontal"
               />
               <img
                 [src]="driver.cars[0].leftview_image || driver.cars[0].rightview_image || 'https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=640&q=80'"
                 alt="Vista lateral"
-                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                class="h-36 w-full rounded-xl border border-white/10 object-cover cursor-pointer hover:opacity-90 transition duration-200"
+                (click)="openCarCarousel(driver.cars[0], 1)"
+                title="Ver galería lateral"
               />
-              <div class="relative">
+              <div class="relative cursor-pointer group" (click)="openCarCarousel(driver.cars[0], 2)">
                 <img
                   [src]="driver.cars[0].backview_image || 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=640&q=80'"
                   alt="Vista trasera"
-                  class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                  class="h-36 w-full rounded-xl border border-white/10 object-cover group-hover:opacity-90 transition duration-200"
                 />
-                <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 text-xl font-semibold text-white">
-                  +3
+                <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 group-hover:bg-black/40 text-xl font-semibold text-white transition">
+                  Ver Galería
                 </div>
               </div>
             </div>
@@ -356,3 +367,75 @@
     </section>
   </main>
 </div>
+
+<!-- Modal: Ampliar Documento / Foto de Perfil -->
+@if (activeModalImage(); as imgUrl) {
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in cursor-zoom-out select-none" 
+    (click)="activeModalImage.set(null)"
+  >
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center" (click)="$event.stopPropagation()">
+      <button 
+        (click)="activeModalImage.set(null)" 
+        class="absolute top-4 right-4 text-white hover:text-rose-400 bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition cursor-pointer z-10 border-0 outline-none"
+      >
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <img [src]="imgUrl" class="max-w-full max-h-[85vh] rounded-xl object-contain shadow-2xl border border-white/10" />
+    </div>
+  </div>
+}
+
+<!-- Modal: Carrusel de Fotos de Vehículos -->
+@if (carImagesModalList().length > 0) {
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in select-none"
+    (click)="carImagesModalList.set([])"
+  >
+    <div class="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center justify-center" (click)="$event.stopPropagation()">
+      <!-- Close Button -->
+      <button 
+        (click)="carImagesModalList.set([])" 
+        class="absolute top-4 right-4 text-white hover:text-rose-400 bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition cursor-pointer z-10 border-0 outline-none"
+      >
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Left Arrow -->
+      @if (carImagesModalList().length > 1) {
+        <button 
+          (click)="prevCarImage($event)" 
+          class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-[#8BD6B3] bg-white/10 hover:bg-white/20 p-3 rounded-full transition cursor-pointer z-10 border-0 outline-none"
+        >
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      }
+
+      <!-- Right Arrow -->
+      @if (carImagesModalList().length > 1) {
+        <button 
+          (click)="nextCarImage($event)" 
+          class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-[#8BD6B3] bg-white/10 hover:bg-white/20 p-3 rounded-full transition cursor-pointer z-10 border-0 outline-none"
+        >
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      }
+
+      <!-- Main Image -->
+      <img [src]="carImagesModalList()[carImagesModalIndex()]" class="max-w-full max-h-[75vh] rounded-xl object-contain shadow-2xl border border-white/10" />
+
+      <!-- Indicator -->
+      <div class="mt-4 text-sm text-[#BFC9C2] bg-black/40 px-3 py-1 rounded-full border border-white/5 font-mono">
+        Imagen {{ carImagesModalIndex() + 1 }} de {{ carImagesModalList().length }}
+      </div>
+    </div>
+  </div>
+}
