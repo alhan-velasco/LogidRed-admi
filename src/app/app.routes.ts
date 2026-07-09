@@ -24,5 +24,6 @@ export const routes: Routes = [
     component: UsersListComponent,
     canActivate: [authGuard, adminGuard],
   },
+  { path: '**', redirectTo: 'login' },
 ];
 

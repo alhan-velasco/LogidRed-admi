@@ -1,15 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { UsersState } from '../../state/users.state';
 import { AuthSessionService } from '../../../../../core/auth/auth-session.service';
+import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
 import { AdminUserDTO, CreateAdminRequestDTO } from '../../../data/models/users.dto';
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   providers: [UsersState],
   templateUrl: './users-list.component.html',
 })
@@ -24,13 +24,13 @@ export class UsersListComponent implements OnInit {
   // New user form binds
   newUserName = '';
   newUserEmail = '';
-  newUserRole = 1;
+  newUserRole = 2;
 
   // Edit user form binds
   editingUser: AdminUserDTO | null = null;
   editUserName = '';
   editUserEmail = '';
-  editUserRole = 1;
+  editUserRole = 2;
 
   ngOnInit(): void {
     this.state.loadUsers();
@@ -39,7 +39,7 @@ export class UsersListComponent implements OnInit {
   openAddModal(): void {
     this.newUserName = '';
     this.newUserEmail = '';
-    this.newUserRole = 1;
+    this.newUserRole = 2;
     this.showAddModal = true;
   }
 

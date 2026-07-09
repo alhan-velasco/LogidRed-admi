@@ -31,6 +31,10 @@ export class DriversPanelState {
     return list.filter((driver) => driver.status === filter);
   });
 
+  readonly pendingDrivers = computed(() =>
+    this.allDrivers().filter((driver) => driver.status === 'pending')
+  );
+
   // Totales calculados reactivamente
   readonly totalCount = computed(() => this.allDrivers().length);
   

@@ -1,14 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SecurityState } from '../../state/security.state';
 import { AuthSessionService } from '../../../../../core/auth/auth-session.service';
+import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
 
 @Component({
   selector: 'app-security-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   providers: [SecurityState],
   templateUrl: './security-panel.component.html',
 })
