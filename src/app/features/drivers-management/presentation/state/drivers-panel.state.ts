@@ -50,6 +50,21 @@ export class DriversPanelState {
     this.allDrivers().filter((driver) => driver.status === 'rejected').length
   );
 
+  setActiveFilter(filter: 'all' | 'approved' | 'pending' | 'rejected'): void {
+    this.activeFilter.set(filter);
+    const drivers = this.filteredDrivers();
+
+    if (drivers.length === 0) {
+      this.selectedDriver.set(null);
+      return;
+    }
+
+    const selectedId = this.selectedDriver()?.id_user;
+    if (!selectedId || !drivers.some((driver) => driver.id_user === selectedId)) {
+      this.selectDriver(drivers[0].id_user);
+    }
+  }
+
   loadPendingDrivers(): void {
     if (!this.session.isAuthenticated()) {
       this.error.set('Sesión no válida. Inicia sesión nuevamente.');

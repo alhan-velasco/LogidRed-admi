@@ -1,13 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthSessionService } from '../../auth/auth-session.service';
+import { UsersRepository } from '../../../features/users-management/data/repository/users.repository';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   template: `
-    <header class="w-full h-20 bg-[#2B3132] border-b border-white/5 relative overflow-hidden select-none">
+    <header class="relative z-40 h-20 w-full overflow-visible border-b border-white/5 bg-[#2B3132] select-none">
       <div class="mx-auto flex max-w-[1440px] h-full items-center justify-between px-6">
 
         <!-- Logo e Identidad (Izquierda) -->
@@ -64,7 +66,7 @@ import { AuthSessionService } from '../../auth/auth-session.service';
             </button>
 
             @if (profileDropdownOpen()) {
-              <div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-white/10 bg-[#15191c] shadow-2xl shadow-black/50 z-50 overflow-hidden">
+              <div class="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#15191c] shadow-2xl shadow-black/50">
                 <button
                   type="button"
                   (click)="onUpdatePassword()"
@@ -92,13 +94,42 @@ import { AuthSessionService } from '../../auth/auth-session.service';
         </div>
       </div>
     </header>
+
+    @if (showPasswordModal()) {
+      <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-4" (click)="closePasswordModal()">
+        <form class="w-full max-w-md rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-2xl" (submit)="submitPasswordChange($event)" (click)="$event.stopPropagation()">
+          <h2 class="text-lg font-semibold text-white">Actualizar contraseña</h2>
+          <p class="mt-2 text-sm text-gray-400">Ingresa tu contraseña actual y una nueva de al menos 8 caracteres.</p>
+          <label class="mt-5 block text-sm text-gray-300" for="old-password">Contraseña actual</label>
+          <input id="old-password" name="oldPassword" type="password" autocomplete="current-password" required [(ngModel)]="oldPassword" class="mt-2 w-full rounded-lg border border-white/10 bg-[#0f1418] px-3 py-2 text-white outline-none focus:border-emerald-400" />
+          <label class="mt-4 block text-sm text-gray-300" for="new-password">Nueva contraseña</label>
+          <input id="new-password" name="newPassword" type="password" autocomplete="new-password" required minlength="8" [(ngModel)]="newPassword" class="mt-2 w-full rounded-lg border border-white/10 bg-[#0f1418] px-3 py-2 text-white outline-none focus:border-emerald-400" />
+          <label class="mt-4 block text-sm text-gray-300" for="confirm-password">Confirmar nueva contraseña</label>
+          <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required [(ngModel)]="confirmPassword" class="mt-2 w-full rounded-lg border border-white/10 bg-[#0f1418] px-3 py-2 text-white outline-none focus:border-emerald-400" />
+          @if (passwordError()) { <p class="mt-3 text-sm text-rose-400">{{ passwordError() }}</p> }
+          @if (passwordSuccess()) { <p class="mt-3 text-sm text-emerald-400">{{ passwordSuccess() }}</p> }
+          <div class="mt-6 flex justify-end gap-3">
+            <button type="button" (click)="closePasswordModal()" [disabled]="isUpdatingPassword()" class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 disabled:opacity-50">Cancelar</button>
+            <button type="submit" [disabled]="isUpdatingPassword()" class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12] disabled:opacity-50">{{ isUpdatingPassword() ? 'Actualizando…' : 'Actualizar' }}</button>
+          </div>
+        </form>
+      </div>
+    }
   `,
 })
 export class NavbarComponent {
   readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
+  private readonly usersRepository = inject(UsersRepository);
 
   readonly profileDropdownOpen = signal<boolean>(false);
+  readonly showPasswordModal = signal<boolean>(false);
+  readonly isUpdatingPassword = signal<boolean>(false);
+  readonly passwordError = signal<string | null>(null);
+  readonly passwordSuccess = signal<string | null>(null);
+  oldPassword = '';
+  newPassword = '';
+  confirmPassword = '';
 
   readonly userInitial = computed(() => {
     const name = this.session.getUserName();
@@ -107,7 +138,48 @@ export class NavbarComponent {
 
   onUpdatePassword(): void {
     this.profileDropdownOpen.set(false);
-    alert('Funcionalidad de actualización de contraseña próximamente.');
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+    this.showPasswordModal.set(true);
+  }
+
+  closePasswordModal(): void {
+    if (!this.isUpdatingPassword()) {
+      this.showPasswordModal.set(false);
+    }
+  }
+
+  submitPasswordChange(event: SubmitEvent): void {
+    event.preventDefault();
+    this.passwordError.set(null);
+    this.passwordSuccess.set(null);
+
+    if (this.newPassword.length < 8) {
+      this.passwordError.set('La nueva contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.passwordError.set('Las contraseñas nuevas no coinciden.');
+      return;
+    }
+
+    this.isUpdatingPassword.set(true);
+    this.usersRepository.updatePassword(this.oldPassword, this.newPassword).subscribe({
+      next: () => {
+        this.isUpdatingPassword.set(false);
+        this.passwordSuccess.set('Contraseña actualizada correctamente.');
+        this.oldPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+      },
+      error: (error) => {
+        this.isUpdatingPassword.set(false);
+        this.passwordError.set(error?.error?.message || 'No se pudo actualizar la contraseña. Verifica la contraseña actual e intenta de nuevo.');
+      },
+    });
   }
 
   onLogout(): void {

@@ -32,4 +32,13 @@ export class UsersRepository {
       withCredentials: API_WITH_CREDENTIALS,
     });
   }
+
+  updatePassword(oldPassword: string, newPassword: string): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/update-password`, {
+      oldPassword,
+      newPassword,
+    }, {
+      withCredentials: API_WITH_CREDENTIALS,
+    });
+  }
 }

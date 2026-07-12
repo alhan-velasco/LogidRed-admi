@@ -3,26 +3,26 @@
 
   <main class="mx-auto flex max-w-[1440px] flex-col gap-6 px-6 py-6">
     <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
-        <p class="font-serif text-sm text-gray-400">Total de carros</p>
+      <button type="button" (click)="state.setActiveFilter('all')" [class.ring-2]="state.activeFilter() === 'all'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
+        <p class="font-serif text-sm text-gray-400">Total de conductores</p>
         <p class="mt-2 text-3xl font-semibold text-emerald-300">
-          {{ state.pendingDrivers().length }}
+          {{ state.totalCount() }}
         </p>
-      </article>
-      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+      </button>
+      <button type="button" (click)="state.setActiveFilter('approved')" [class.ring-2]="state.activeFilter() === 'approved'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
         <p class="font-serif text-sm text-gray-400">Aprobados</p>
-        <p class="mt-2 text-3xl font-semibold text-emerald-300">0</p>
-      </article>
-      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+        <p class="mt-2 text-3xl font-semibold text-emerald-300">{{ state.approvedCount() }}</p>
+      </button>
+      <button type="button" (click)="state.setActiveFilter('pending')" [class.ring-2]="state.activeFilter() === 'pending'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
         <p class="font-serif text-sm text-gray-400">Pendientes</p>
         <p class="mt-2 text-3xl font-semibold text-amber-300">
-          {{ state.pendingDrivers().length }}
+          {{ state.pendingCount() }}
         </p>
-      </article>
-      <article class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 shadow-xl shadow-black/30">
+      </button>
+      <button type="button" (click)="state.setActiveFilter('rejected')" [class.ring-2]="state.activeFilter() === 'rejected'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
         <p class="font-serif text-sm text-gray-400">Rechazados</p>
-        <p class="mt-2 text-3xl font-semibold text-rose-400">0</p>
-      </article>
+        <p class="mt-2 text-3xl font-semibold text-rose-400">{{ state.rejectedCount() }}</p>
+      </button>
     </section>
 
     @if (state.error()) {
@@ -34,14 +34,16 @@
     <section class="grid gap-6 lg:grid-cols-[350px_1fr]">
       <aside class="rounded-2xl border border-white/10 bg-[#14191c] p-4 shadow-xl shadow-black/30">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="font-serif text-lg text-white">Pendientes</h2>
+          <h2 class="font-serif text-lg text-white">
+            {{ state.activeFilter() === 'all' ? 'Todos los conductores' : state.activeFilter() === 'approved' ? 'Aprobados' : state.activeFilter() === 'pending' ? 'Pendientes' : 'Rechazados' }}
+          </h2>
           <span class="rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-300">
-            {{ state.pendingDrivers().length }} conductores
+            {{ state.filteredDrivers().length }} conductores
           </span>
         </div>
 
         <div class="space-y-3">
-          @for (driver of state.pendingDrivers(); track driver.id_user) {
+          @for (driver of state.filteredDrivers(); track driver.id_user) {
             <button
               type="button"
               class="w-full rounded-xl border px-3 py-3 text-left transition"
@@ -79,7 +81,7 @@
             </button>
           } @empty {
             <div class="rounded-xl border border-white/10 bg-[#0f1418] px-4 py-6 text-center text-sm text-gray-400">
-              No hay conductores pendientes por validar.
+              No hay conductores en esta categoría.
             </div>
           }
         </div>
