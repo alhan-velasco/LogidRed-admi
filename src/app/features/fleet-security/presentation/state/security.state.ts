@@ -1,120 +1,166 @@
-import { Injectable, inject, signal, effect } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { SecurityRepository } from '../../data/repository/security.repository';
-import { 
-  LegalAuditTripDTO, 
-  DriverHistoricalIdentityDTO, 
-  VehicleAuditDTO, 
-  TripRoutePointDTO 
-} from '../../data/models/security.dto';
+import { DriverPanelRepository } from '../../../drivers-management/data/repository/driver-panel.repository';
+import { DriverDetailDTO, PendingDriverDTO } from '../../../drivers-management/data/models/driver-panel.dto';
+import { DriverProfileDTO, RideRecord, getRideId } from '../../data/models/security.dto';
 
 @Injectable()
 export class SecurityState {
   private readonly repository = inject(SecurityRepository);
+  private readonly driverPanelRepository = inject(DriverPanelRepository);
 
-  // Signals obligatorios del estado
+  // ── Listado de conductores aprobados (los únicos relevantes aquí) ────
+  readonly approvedDrivers = signal<PendingDriverDTO[]>([]);
   readonly searchQuery = signal<string>('');
-  readonly officialCaseId = signal<string>('');
-  readonly tripsResults = signal<LegalAuditTripDTO[]>([]);
-  readonly selectedTripDetail = signal<{ 
-    driver: DriverHistoricalIdentityDTO; 
-    vehicle: VehicleAuditDTO; 
-    route: TripRoutePointDTO[]; 
-  } | null>(null);
-  readonly isSearching = signal<boolean>(false);
-
-  // Signals de soporte adicionales
+  readonly isLoadingList = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
+
+  readonly filteredDrivers = computed(() => {
+    const list = this.approvedDrivers();
+    const term = this.searchQuery().trim().toLowerCase();
+    if (!term) return list;
+    return list.filter(
+      (d) =>
+        `${d.name} ${d.lastname}`.toLowerCase().includes(term) ||
+        d.email.toLowerCase().includes(term) ||
+        String(d.id_user).includes(term)
+    );
+  });
+
+  readonly totalCount = computed(() => this.approvedDrivers().length);
+
+  // ── Expediente del conductor seleccionado ────────────────────────────
+  readonly selectedDriverId = signal<number | null>(null);
+  readonly selectedDriverDetail = signal<DriverDetailDTO | null>(null);
+  readonly selectedDriverProfile = signal<DriverProfileDTO | null>(null);
+  readonly selectedDriverStatistics = signal<Record<string, unknown> | null>(null);
+  readonly isLoadingDetail = signal<boolean>(false);
+  readonly isBlocking = signal<boolean>(false);
+
+  // ── Viajes del conductor seleccionado ────────────────────────────────
+  readonly driverTrips = signal<RideRecord[]>([]);
+  readonly tripsPage = signal<number>(1);
+  readonly tripsLimit = signal<number>(10);
+  readonly isLoadingTrips = signal<boolean>(false);
+
+  // ── Ruta del viaje seleccionado ──────────────────────────────────────
   readonly selectedTripId = signal<number | null>(null);
+  readonly selectedTripTracking = signal<RideRecord[]>([]);
+  readonly isLoadingTracking = signal<boolean>(false);
 
-  constructor() {
-    // Si se limpia el número de oficio, automáticamente revocamos los accesos y reseteamos el estado.
-    effect(() => {
-      const caseId = this.officialCaseId();
-      if (!caseId.trim()) {
-        this.clearState();
-      }
-    }, { allowSignalWrites: true });
-  }
-
-  /**
-   * Ejecuta la búsqueda de viajes bajo sospecha.
-   * Está bloqueada si el 'officialCaseId' está vacío.
-   */
-  executeSearch(): void {
-    const caseId = this.officialCaseId().trim();
-    if (!caseId) {
-      this.errorMessage.set('El número de oficio o carpeta de investigación es obligatorio para realizar consultas.');
-      return;
-    }
-
+  loadDrivers(): void {
+    this.isLoadingList.set(true);
     this.errorMessage.set(null);
-    this.isSearching.set(true);
 
-    // Registrar en auditoría judicial el acceso primero
-    this.repository.logJudicialAccess(caseId).subscribe({
-      next: () => {
-        // Ejecutar búsqueda por placas o conductor
-        this.repository.searchTrips(this.searchQuery()).subscribe({
-          next: (trips) => {
-            this.tripsResults.set(trips);
-            this.isSearching.set(false);
-
-            // Si hay resultados y no hay viaje seleccionado, o el actual no está en la nueva lista, reseteamos el detalle
-            const currentSelected = this.selectedTripId();
-            if (trips.length > 0 && (!currentSelected || !trips.some(t => t.id_trip === currentSelected))) {
-              this.selectTrip(trips[0].id_trip);
-            } else if (trips.length === 0) {
-              this.selectedTripDetail.set(null);
-              this.selectedTripId.set(null);
-            }
-          },
-          error: (err) => {
-            this.errorMessage.set('Error al buscar viajes. Intente de nuevo.');
-            this.isSearching.set(false);
-          }
-        });
+    this.driverPanelRepository.getDriversByStatus('accepted').subscribe({
+      next: (drivers) => {
+        this.approvedDrivers.set(drivers);
+        this.isLoadingList.set(false);
       },
       error: () => {
-        this.errorMessage.set('Fallo de autorización al registrar el acceso judicial.');
-        this.isSearching.set(false);
-      }
+        this.errorMessage.set('No se pudo cargar la lista de conductores.');
+        this.isLoadingList.set(false);
+      },
     });
   }
 
-  /**
-   * Carga el expediente completo y telemetría del viaje seleccionado.
-   */
-  selectTrip(idTrip: number): void {
-    const caseId = this.officialCaseId().trim();
-    if (!caseId) {
-      this.errorMessage.set('Debes proporcionar una carpeta de investigación para ver el expediente de un viaje.');
-      return;
-    }
-
-    this.selectedTripId.set(idTrip);
-    this.isSearching.set(true);
+  selectDriver(driverId: number): void {
+    this.selectedDriverId.set(driverId);
+    this.selectedDriverDetail.set(null);
+    this.selectedDriverProfile.set(null);
+    this.selectedDriverStatistics.set(null);
+    this.tripsPage.set(1);
+    this.driverTrips.set([]);
+    this.clearTripSelection();
+    this.isLoadingDetail.set(true);
     this.errorMessage.set(null);
 
-    this.repository.getTripForensicDetail(idTrip).subscribe({
+    this.repository.getDriverIdentity(driverId).subscribe({
       next: (detail) => {
-        this.selectedTripDetail.set(detail);
-        this.isSearching.set(false);
+        this.selectedDriverDetail.set(detail);
+        this.isLoadingDetail.set(false);
       },
-      error: () => {
-        this.errorMessage.set('Error al recuperar la ficha forense del viaje.');
-        this.isSearching.set(false);
-        this.selectedTripDetail.set(null);
-      }
+      error: () => this.isLoadingDetail.set(false),
+    });
+
+    this.repository.getDriverProfile(driverId).subscribe((profile) => this.selectedDriverProfile.set(profile));
+    this.repository.getDriverStatistics(driverId).subscribe((stats) => this.selectedDriverStatistics.set(stats));
+
+    this.loadDriverTrips();
+  }
+
+  loadDriverTrips(): void {
+    const driverId = this.selectedDriverId();
+    if (driverId == null) return;
+
+    this.isLoadingTrips.set(true);
+    this.repository.getRidesByDriver(driverId, this.tripsPage(), this.tripsLimit()).subscribe({
+      next: (result) => {
+        this.driverTrips.set(result.items);
+        this.isLoadingTrips.set(false);
+      },
+      error: () => this.isLoadingTrips.set(false),
     });
   }
 
-  /**
-   * Limpia el estado de seguridad.
-   */
-  private clearState(): void {
-    this.tripsResults.set([]);
-    this.selectedTripDetail.set(null);
+  changeTripsPage(delta: number): void {
+    const next = this.tripsPage() + delta;
+    if (next < 1) return;
+    this.tripsPage.set(next);
+    this.loadDriverTrips();
+  }
+
+  selectTrip(ride: RideRecord): void {
+    const rideId = getRideId(ride);
+    this.selectedTripId.set(rideId);
+    this.selectedTripTracking.set([]);
+
+    if (rideId == null) return;
+
+    this.isLoadingTracking.set(true);
+    this.repository.getTripTracking(rideId).subscribe({
+      next: (points) => {
+        this.selectedTripTracking.set(points);
+        this.isLoadingTracking.set(false);
+      },
+      error: () => this.isLoadingTracking.set(false),
+    });
+  }
+
+  clearTripSelection(): void {
     this.selectedTripId.set(null);
-    this.errorMessage.set(null);
+    this.selectedTripTracking.set([]);
+  }
+
+  /**
+   * Bloquea al conductor: reutiliza /admin/drivers/{id}/reject (único endpoint real
+   * que cambia approved a false). Como esta pantalla sólo muestra aprobados, al
+   * bloquear se retira de la lista y se limpia la selección.
+   */
+  blockDriver(reason: string): void {
+    const driverId = this.selectedDriverId();
+    if (driverId == null || !reason.trim()) return;
+
+    this.isBlocking.set(true);
+    this.driverPanelRepository.rejectDriver(driverId, reason.trim()).subscribe({
+      next: (success) => {
+        this.isBlocking.set(false);
+        if (success) {
+          this.approvedDrivers.set(this.approvedDrivers().filter((d) => d.id_user !== driverId));
+          this.selectedDriverId.set(null);
+          this.selectedDriverDetail.set(null);
+          this.selectedDriverProfile.set(null);
+          this.selectedDriverStatistics.set(null);
+          this.driverTrips.set([]);
+          this.clearTripSelection();
+        } else {
+          this.errorMessage.set('No se pudo bloquear al conductor.');
+        }
+      },
+      error: () => {
+        this.isBlocking.set(false);
+        this.errorMessage.set('Error de conexión al intentar bloquear.');
+      },
+    });
   }
 }

@@ -7,11 +7,12 @@ import { DriverDocumentDTO } from '../../../data/models/driver-panel.dto';
 import { AuthSessionService } from '../../../../../core/auth/auth-session.service';
 import { API_BASE_URL } from '../../../../../core/config/api.config';
 import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
+import { PrivateImageComponent } from '../../../../../shared/private-image/private-image.component';
 
 @Component({
   selector: 'app-validation',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, PrivateImageComponent],
   providers: [DriversPanelState],
   templateUrl: './validation.component.html',
 })

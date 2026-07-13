@@ -1,43 +1,43 @@
-<div class="min-h-screen bg-[#0b0f12] text-gray-100">
+<div class="min-h-screen bg-surface text-on-surface">
   <app-navbar></app-navbar>
 
   <main class="mx-auto flex max-w-[1440px] flex-col gap-6 px-6 py-6">
     <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <button type="button" (click)="state.setActiveFilter('all')" [class.ring-2]="state.activeFilter() === 'all'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
-        <p class="font-serif text-sm text-gray-400">Total de conductores</p>
-        <p class="mt-2 text-3xl font-semibold text-emerald-300">
+      <button type="button" (click)="state.setActiveFilter('all')" [class.ring-2]="state.activeFilter() === 'all'" class="rounded-2xl border border-primary/30 bg-surface-container p-5 text-left shadow-xl shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-primary/50">
+        <p class="font-serif text-sm text-on-surface-variant">Total de conductores</p>
+        <p class="mt-2 text-3xl font-semibold text-primary">
           {{ state.totalCount() }}
         </p>
       </button>
-      <button type="button" (click)="state.setActiveFilter('approved')" [class.ring-2]="state.activeFilter() === 'approved'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
-        <p class="font-serif text-sm text-gray-400">Aprobados</p>
-        <p class="mt-2 text-3xl font-semibold text-emerald-300">{{ state.approvedCount() }}</p>
+      <button type="button" (click)="state.setActiveFilter('approved')" [class.ring-2]="state.activeFilter() === 'approved'" class="rounded-2xl border border-primary/30 bg-surface-container p-5 text-left shadow-xl shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-primary/50">
+        <p class="font-serif text-sm text-on-surface-variant">Aprobados</p>
+        <p class="mt-2 text-3xl font-semibold text-primary">{{ state.approvedCount() }}</p>
       </button>
-      <button type="button" (click)="state.setActiveFilter('pending')" [class.ring-2]="state.activeFilter() === 'pending'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
-        <p class="font-serif text-sm text-gray-400">Pendientes</p>
-        <p class="mt-2 text-3xl font-semibold text-amber-300">
+      <button type="button" (click)="state.setActiveFilter('pending')" [class.ring-2]="state.activeFilter() === 'pending'" class="rounded-2xl border border-primary/30 bg-surface-container p-5 text-left shadow-xl shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-primary/50">
+        <p class="font-serif text-sm text-on-surface-variant">Pendientes</p>
+        <p class="mt-2 text-3xl font-semibold text-tertiary">
           {{ state.pendingCount() }}
         </p>
       </button>
-      <button type="button" (click)="state.setActiveFilter('rejected')" [class.ring-2]="state.activeFilter() === 'rejected'" class="rounded-2xl border border-emerald-900/40 bg-[#14191c] p-5 text-left shadow-xl shadow-black/30 transition hover:bg-[#192124] focus:outline-none focus:ring-emerald-400/60">
-        <p class="font-serif text-sm text-gray-400">Rechazados</p>
-        <p class="mt-2 text-3xl font-semibold text-rose-400">{{ state.rejectedCount() }}</p>
+      <button type="button" (click)="state.setActiveFilter('rejected')" [class.ring-2]="state.activeFilter() === 'rejected'" class="rounded-2xl border border-primary/30 bg-surface-container p-5 text-left shadow-xl shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-primary/50">
+        <p class="font-serif text-sm text-on-surface-variant">Rechazados</p>
+        <p class="mt-2 text-3xl font-semibold text-error">{{ state.rejectedCount() }}</p>
       </button>
     </section>
 
     @if (state.error()) {
-      <div class="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+      <div class="rounded-xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
         {{ state.error() }}
       </div>
     }
 
     <section class="grid gap-6 lg:grid-cols-[350px_1fr]">
-      <aside class="rounded-2xl border border-white/10 bg-[#14191c] p-4 shadow-xl shadow-black/30">
+      <aside class="rounded-2xl border border-outline-variant/30 bg-surface-container p-4 shadow-xl shadow-black/10">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="font-serif text-lg text-white">
+          <h2 class="font-serif text-lg text-on-surface">
             {{ state.activeFilter() === 'all' ? 'Todos los conductores' : state.activeFilter() === 'approved' ? 'Aprobados' : state.activeFilter() === 'pending' ? 'Pendientes' : 'Rechazados' }}
           </h2>
-          <span class="rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-300">
+          <span class="rounded-full bg-primary/15 px-3 py-1 text-xs text-primary">
             {{ state.filteredDrivers().length }} conductores
           </span>
         </div>
@@ -47,10 +47,10 @@
             <button
               type="button"
               class="w-full rounded-xl border px-3 py-3 text-left transition"
-              [class.border-emerald-500/50]="state.selectedDriver()?.id_user === driver.id_user"
-              [class.bg-emerald-500/10]="state.selectedDriver()?.id_user === driver.id_user"
-              [class.border-white/10]="state.selectedDriver()?.id_user !== driver.id_user"
-              [class.bg-[#0f1418]]="state.selectedDriver()?.id_user !== driver.id_user"
+              [class.border-primary/50]="state.selectedDriver()?.id_user === driver.id_user"
+              [class.bg-primary/10]="state.selectedDriver()?.id_user === driver.id_user"
+              [class.border-outline-variant/30]="state.selectedDriver()?.id_user !== driver.id_user"
+              [class.bg-surface-container-low]="state.selectedDriver()?.id_user !== driver.id_user"
               (click)="state.selectDriver(driver.id_user)"
             >
               <div class="flex items-start gap-3">
@@ -64,15 +64,15 @@
                   class="h-11 w-11 rounded-full object-cover"
                 />
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-white">
+                  <p class="truncate text-sm font-medium text-on-surface">
                     {{ driver.name }} {{ driver.lastname }}
                   </p>
-                  <p class="truncate text-xs text-gray-400">{{ driver.email }}</p>
+                  <p class="truncate text-xs text-on-surface-variant">{{ driver.email }}</p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300">
+                    <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] text-primary">
                       INE Pending
                     </span>
-                    <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] text-rose-300">
+                    <span class="rounded-full bg-error/15 px-2 py-0.5 text-[10px] text-error">
                       Review Required
                     </span>
                   </div>
@@ -80,14 +80,14 @@
               </div>
             </button>
           } @empty {
-            <div class="rounded-xl border border-white/10 bg-[#0f1418] px-4 py-6 text-center text-sm text-gray-400">
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
               No hay conductores en esta categoría.
             </div>
           }
         </div>
       </aside>
 
-      <article class="rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-xl shadow-black/30">
+      <article class="rounded-2xl border border-outline-variant/30 bg-surface-container p-6 shadow-xl shadow-black/10">
         @if (state.selectedDriver(); as driver) {
           <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div class="flex items-center gap-4">
@@ -98,13 +98,13 @@
                 height="80"
                 loading="lazy"
                 decoding="async"
-                class="h-20 w-20 rounded-2xl border border-white/10 object-cover"
+                class="h-20 w-20 rounded-2xl border border-outline-variant/30 object-cover"
               />
               <div>
-                <h2 class="font-serif text-2xl text-white">{{ driver.name }} {{ driver.lastname }}</h2>
-                <p class="text-sm text-gray-400">{{ driver.email }}</p>
-                <p class="text-sm text-gray-400">{{ driver.numberphone }}</p>
-                <p class="text-sm text-gray-500">Nacimiento: {{ driver.birthdate || 'Sin registro' }}</p>
+                <h2 class="font-serif text-2xl text-on-surface">{{ driver.name }} {{ driver.lastname }}</h2>
+                <p class="text-sm text-on-surface-variant">{{ driver.email }}</p>
+                <p class="text-sm text-on-surface-variant">{{ driver.numberphone }}</p>
+                <p class="text-sm text-on-surface-variant/80">Nacimiento: {{ driver.birthdate || 'Sin registro' }}</p>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">
@@ -112,7 +112,7 @@
                 type="button"
                 (click)="onRejectClick()"
                 [disabled]="state.isLoading()"
-                class="rounded-lg border border-rose-800/60 px-4 py-2 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
+                class="rounded-lg border border-error/50 px-4 py-2 text-sm font-medium text-error transition hover:bg-error/10 disabled:opacity-50"
               >
                 Reject
               </button>
@@ -120,42 +120,62 @@
                 type="button"
                 (click)="onApproveClick()"
                 [disabled]="state.isLoading()"
-                class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12] transition hover:bg-[#26af7b] disabled:opacity-50"
+                class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50"
               >
                 Approve Driver
               </button>
             </div>
           </div>
 
-          <div class="mb-6 grid gap-3 md:grid-cols-3">
-            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
-              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">INE</p>
-              <img
-                [src]="getDocumentByType(1)?.url || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=640&q=80'"
-                alt="INE"
-                class="h-32 w-full rounded-lg object-cover"
-              />
+          <div class="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-on-surface-variant">ID Oficial (Frente)</p>
+              <div class="h-32 w-full overflow-hidden rounded-lg">
+                <app-private-image
+                  [documentId]="getDocumentByType(1)?.id_document"
+                  alt="Identificación oficial - frente"
+                  imgClass="h-32 w-full object-cover"
+                  containerClass="h-32 bg-surface-container-high rounded-lg"
+                ></app-private-image>
+              </div>
             </div>
-            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
-              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Placas CDMX</p>
-              <img
-                [src]="getDocumentByType(2)?.url || driver.cars?.[0]?.plates_image || 'https://images.unsplash.com/photo-1556122071-e404eaedb77f?auto=format&fit=crop&w=640&q=80'"
-                alt="Placas"
-                class="h-32 w-full rounded-lg object-cover"
-              />
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-on-surface-variant">ID Oficial (Reverso)</p>
+              <div class="h-32 w-full overflow-hidden rounded-lg">
+                <app-private-image
+                  [documentId]="getDocumentByType(2)?.id_document"
+                  alt="Identificación oficial - reverso"
+                  imgClass="h-32 w-full object-cover"
+                  containerClass="h-32 bg-surface-container-high rounded-lg"
+                ></app-private-image>
+              </div>
             </div>
-            <div class="rounded-xl border border-white/10 bg-[#0f1418] p-3">
-              <p class="mb-2 text-xs uppercase tracking-wide text-gray-400">Comprobante CFE</p>
-              <img
-                [src]="getDocumentByType(3)?.url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=640&q=80'"
-                alt="Comprobante"
-                class="h-32 w-full rounded-lg object-cover"
-              />
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-on-surface-variant">Licencia de Conducir</p>
+              <div class="h-32 w-full overflow-hidden rounded-lg">
+                <app-private-image
+                  [documentId]="getDocumentByType(3)?.id_document"
+                  alt="Licencia de conducir"
+                  imgClass="h-32 w-full object-cover"
+                  containerClass="h-32 bg-surface-container-high rounded-lg"
+                ></app-private-image>
+              </div>
+            </div>
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low p-3">
+              <p class="mb-2 text-xs uppercase tracking-wide text-on-surface-variant">Comprobante de Domicilio</p>
+              <div class="h-32 w-full overflow-hidden rounded-lg">
+                <app-private-image
+                  [documentId]="getDocumentByType(4)?.id_document"
+                  alt="Comprobante de domicilio"
+                  imgClass="h-32 w-full object-cover"
+                  containerClass="h-32 bg-surface-container-high rounded-lg"
+                ></app-private-image>
+              </div>
             </div>
           </div>
 
           <div class="mb-3 flex items-center justify-between">
-            <h3 class="font-serif text-xl text-white">Carro</h3>
+            <h3 class="font-serif text-xl text-on-surface">Carro</h3>
           </div>
 
           @if (driver.cars?.length > 0) {
@@ -163,18 +183,18 @@
               <img
                 [src]="driver.cars?.[0]?.frontview_image || 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=640&q=80'"
                 alt="Vista frontal"
-                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                class="h-36 w-full rounded-xl border border-outline-variant/30 object-cover"
               />
               <img
                 [src]="driver.cars?.[0]?.leftview_image || driver.cars?.[0]?.rightview_image || 'https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=640&q=80'"
                 alt="Vista lateral"
-                class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                class="h-36 w-full rounded-xl border border-outline-variant/30 object-cover"
               />
               <div class="relative">
                 <img
                   [src]="driver.cars?.[0]?.backview_image || 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=640&q=80'"
                   alt="Vista trasera"
-                  class="h-36 w-full rounded-xl border border-white/10 object-cover"
+                  class="h-36 w-full rounded-xl border border-outline-variant/30 object-cover"
                 />
                 <div class="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 text-xl font-semibold text-white">
                   +3
@@ -182,12 +202,12 @@
               </div>
             </div>
           } @else {
-            <div class="rounded-xl border border-white/10 bg-[#0f1418] px-4 py-6 text-center text-sm text-gray-400">
+            <div class="rounded-xl border border-outline-variant/30 bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
               Este conductor no tiene vehiculos registrados.
             </div>
           }
         } @else {
-          <div class="flex min-h-[420px] items-center justify-center rounded-xl border border-white/10 bg-[#0f1418] text-gray-400">
+          <div class="flex min-h-[420px] items-center justify-center rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface-variant">
             Selecciona un conductor para ver su informacion.
           </div>
         }
@@ -198,12 +218,12 @@
 
 @if (showApproveConfirmModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" (click)="cancelApprove()">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-2xl" (click)="$event.stopPropagation()">
-      <h3 class="text-lg font-semibold text-white">Confirmar aprobación</h3>
-      <p class="mt-2 text-sm text-gray-400">¿Está seguro de que desea aprobar a este conductor?</p>
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-semibold text-on-surface">Confirmar aprobación</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">¿Está seguro de que desea aprobar a este conductor?</p>
       <div class="mt-6 flex justify-end gap-3">
-        <button type="button" (click)="cancelApprove()" class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300">Cancelar</button>
-        <button type="button" (click)="confirmApprove()" class="rounded-lg bg-[#2bc48a] px-4 py-2 text-sm font-semibold text-[#0b0f12]">Confirmar</button>
+        <button type="button" (click)="cancelApprove()" class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant">Cancelar</button>
+        <button type="button" (click)="confirmApprove()" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary">Confirmar</button>
       </div>
     </div>
   </div>
@@ -211,20 +231,20 @@
 
 @if (showRejectReasonModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" (click)="cancelReject()">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-2xl" (click)="$event.stopPropagation()">
-      <h3 class="text-lg font-semibold text-white">Motivo de rechazo</h3>
-      <p class="mt-2 text-sm text-gray-400">Describe el motivo del rechazo para continuar con la confirmación.</p>
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-semibold text-on-surface">Motivo de rechazo</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">Describe el motivo del rechazo para continuar con la confirmación.</p>
       <textarea
         [ngModel]="rejectReason()"
         (ngModelChange)="rejectReason.set($event)"
         name="rejectReason"
         rows="4"
-        class="mt-4 w-full rounded-xl border border-white/10 bg-[#0f1418] px-3 py-2 text-sm text-white outline-none focus:border-rose-500/50"
+        class="mt-4 w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-error/50"
         placeholder="Ej. Documentación incompleta"
       ></textarea>
       <div class="mt-6 flex justify-end gap-3">
-        <button type="button" (click)="cancelReject()" class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300">Cancelar</button>
-        <button type="button" (click)="continueReject()" class="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white">Continuar</button>
+        <button type="button" (click)="cancelReject()" class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant">Cancelar</button>
+        <button type="button" (click)="continueReject()" class="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-on-error">Continuar</button>
       </div>
     </div>
   </div>
@@ -232,15 +252,15 @@
 
 @if (showRejectConfirmModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" (click)="cancelReject()">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#14191c] p-6 shadow-2xl" (click)="$event.stopPropagation()">
-      <h3 class="text-lg font-semibold text-white">Confirmar rechazo</h3>
-      <p class="mt-2 text-sm text-gray-400">Se enviará el siguiente motivo al conductor:</p>
-      <div class="mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-semibold text-on-surface">Confirmar rechazo</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">Se enviará el siguiente motivo al conductor:</p>
+      <div class="mt-4 rounded-xl border border-error/30 bg-error/10 p-3 text-sm text-error">
         {{ rejectReason() }}
       </div>
       <div class="mt-6 flex justify-end gap-3">
-        <button type="button" (click)="cancelReject()" class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300">Cancelar</button>
-        <button type="button" (click)="confirmReject()" class="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white">Confirmar Rechazo</button>
+        <button type="button" (click)="cancelReject()" class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant">Cancelar</button>
+        <button type="button" (click)="confirmReject()" class="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-on-error">Confirmar Rechazo</button>
       </div>
     </div>
   </div>

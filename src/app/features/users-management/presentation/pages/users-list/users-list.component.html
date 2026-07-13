@@ -1,19 +1,19 @@
-<div class="min-h-screen bg-[#0b0f12] text-gray-100 font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+<div class="min-h-screen bg-surface text-on-surface font-sans selection:bg-primary/30 selection:text-primary">
   <app-navbar></app-navbar>
 
   <!-- Contenedor Principal -->
   <main class="mx-auto flex max-w-[1440px] flex-col gap-6 px-6 py-6">
-    
+
     <!-- Encabezado de la Sección -->
-    <div class="flex flex-wrap items-center justify-between gap-4 border-l-4 border-[#8BD6B3] pl-4 py-1">
+    <div class="flex flex-wrap items-center justify-between gap-4 border-l-4 border-primary pl-4 py-1">
       <div>
-        <h1 class="text-2xl font-bold tracking-tight text-white uppercase font-serif">Gestión de Personal</h1>
-        <p class="text-xs text-gray-400 uppercase tracking-widest">Administración de accesos de trabajadores y administradores</p>
+        <h1 class="text-2xl font-bold tracking-tight text-on-surface uppercase font-serif">Gestión de Personal</h1>
+        <p class="text-xs text-on-surface-variant uppercase tracking-widest">Administración de accesos de trabajadores y administradores</p>
       </div>
-      <button 
-        type="button" 
-        (click)="openAddModal()" 
-        class="flex items-center gap-2 rounded-xl bg-[#1D6B4F] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#185841] shadow-lg shadow-emerald-950/20 cursor-pointer border-0 outline-none"
+      <button
+        type="button"
+        (click)="openAddModal()"
+        class="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-90 shadow-lg shadow-primary/20 cursor-pointer border-0 outline-none"
       >
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -23,31 +23,31 @@
     </div>
 
     @if (state.error()) {
-      <div class="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+      <div class="rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
         {{ state.error() }}
       </div>
     }
 
     <!-- Grilla/Tabla de Usuarios -->
-    <div class="rounded-2xl border border-white/10 bg-[#14191c]/50 p-6 shadow-xl shadow-black/30 backdrop-blur-lg">
+    <div class="rounded-2xl border border-outline-variant/30 bg-surface-container/70 p-6 shadow-xl shadow-black/10 backdrop-blur-lg">
       @if (state.isLoading() && state.users().length === 0) {
         <div class="flex min-h-[300px] flex-col items-center justify-center gap-3">
-          <div class="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500/20 border-t-emerald-500"></div>
-          <span class="text-sm text-gray-400">Cargando personal...</span>
+          <div class="h-10 w-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
+          <span class="text-sm text-on-surface-variant">Cargando personal...</span>
         </div>
       } @else if (state.users().length === 0) {
         <div class="flex min-h-[300px] flex-col items-center justify-center text-center p-6">
-          <svg class="h-16 w-16 text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <svg class="h-16 w-16 text-on-surface-variant/60 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m0 0-.003-.034A5.99 5.99 0 0 1 12 12.75a5.99 5.99 0 0 1 6 5.935m-12 0a11.944 11.944 0 0 1-3.742-.479 3 3 0 0 1-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m0 0-.003-.034A5.99 5.99 0 0 1 12 12.75Z" />
           </svg>
-          <h3 class="text-lg font-medium text-white">No hay personal registrado</h3>
-          <p class="text-sm text-gray-500 mt-1">Comienza agregando un nuevo administrador o trabajador.</p>
+          <h3 class="text-lg font-medium text-on-surface">No hay personal registrado</h3>
+          <p class="text-sm text-on-surface-variant/80 mt-1">Comienza agregando un nuevo administrador o trabajador.</p>
         </div>
       } @else {
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-white/10 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <tr class="border-b border-outline-variant/30 text-xs font-semibold uppercase tracking-wider text-on-surface-variant">
                 <th class="pb-3 pl-4">ID</th>
                 <th class="pb-3">Nombre</th>
                 <th class="pb-3">Correo electrónico</th>
@@ -55,37 +55,37 @@
                 <th class="pb-3 text-right pr-4">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-white/5">
+            <tbody class="divide-y divide-outline-variant/20">
               @for (user of state.users(); track user.id_admin) {
-                <tr class="text-sm text-gray-300 hover:bg-white/5 transition">
-                  <td class="py-4 pl-4 font-mono text-xs text-gray-500">{{ user.id_admin }}</td>
-                  <td class="py-4 font-medium text-white">{{ user.name }}</td>
-                  <td class="py-4 font-mono text-xs text-gray-400">{{ user.email }}</td>
+                <tr class="text-sm text-on-surface hover:bg-on-surface/5 transition">
+                  <td class="py-4 pl-4 font-mono text-xs text-on-surface-variant/70">{{ user.id_admin }}</td>
+                  <td class="py-4 font-medium text-on-surface">{{ user.name }}</td>
+                  <td class="py-4 font-mono text-xs text-on-surface-variant">{{ user.email }}</td>
                   <td class="py-4">
-                    <span 
+                    <span
                       class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      [class.bg-[#1D6B4F]/20]="user.role === 1"
-                      [class.text-[#8BD6B3]]="user.role === 1"
-                      [class.bg-amber-500/15]="user.role === 2"
-                      [class.text-amber-300]="user.role === 2"
+                      [class.bg-primary/20]="user.role === 1"
+                      [class.text-primary]="user.role === 1"
+                      [class.bg-tertiary/15]="user.role === 2"
+                      [class.text-tertiary]="user.role === 2"
                     >
                       {{ user.role === 1 ? 'Administrador' : 'Trabajador' }}
                     </span>
                   </td>
                   <td class="py-4 text-right pr-4">
                     <div class="inline-flex gap-2">
-                      <button 
+                      <button
                         (click)="openEditModal(user)"
-                        class="p-1 text-gray-400 hover:text-[#8BD6B3] transition cursor-pointer bg-transparent border-0 outline-none"
+                        class="p-1 text-on-surface-variant hover:text-primary transition cursor-pointer bg-transparent border-0 outline-none"
                         title="Editar"
                       >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                         </svg>
                       </button>
-                      <button 
+                      <button
                         (click)="deleteUser(user.id_admin)"
-                        class="p-1 text-gray-400 hover:text-rose-400 transition cursor-pointer bg-transparent border-0 outline-none"
+                        class="p-1 text-on-surface-variant hover:text-error transition cursor-pointer bg-transparent border-0 outline-none"
                         title="Eliminar"
                       >
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -107,10 +107,10 @@
 <!-- Modal: Registrar Personal -->
 @if (showAddModal) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in" (click)="closeAddModal()">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#15191c] p-6 shadow-2xl" (click)="$event.stopPropagation()">
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-white uppercase tracking-wide">Registrar Nuevo Personal</h3>
-        <button (click)="closeAddModal()" class="text-gray-400 hover:text-white transition bg-transparent border-0 cursor-pointer">
+        <h3 class="text-lg font-bold text-on-surface uppercase tracking-wide">Registrar Nuevo Personal</h3>
+        <button (click)="closeAddModal()" class="text-on-surface-variant hover:text-on-surface transition bg-transparent border-0 cursor-pointer">
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -119,49 +119,49 @@
 
       <form (ngSubmit)="submitAddUser()" class="space-y-4">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Nombre completo</label>
-          <input 
-            type="text" 
-            [(ngModel)]="newUserName" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Nombre completo</label>
+          <input
+            type="text"
+            [(ngModel)]="newUserName"
             name="newUserName"
-            placeholder="Ej. Carlos Mendoza" 
+            placeholder="Ej. Carlos Mendoza"
             required
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Correo electrónico</label>
-          <input 
-            type="email" 
-            [(ngModel)]="newUserEmail" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Correo electrónico</label>
+          <input
+            type="email"
+            [(ngModel)]="newUserEmail"
             name="newUserEmail"
-            placeholder="Ej. carlos@logired.com" 
+            placeholder="Ej. carlos@logired.com"
             required
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Rol asignado</label>
-          <select 
-            [(ngModel)]="newUserRole" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Rol asignado</label>
+          <select
+            [(ngModel)]="newUserRole"
             name="newUserRole"
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           >
             <option [value]="1">Administrador (Control Total)</option>
             <option [value]="2">Trabajador (Solo Validación)</option>
           </select>
         </div>
         <div class="pt-4 flex justify-end gap-3">
-          <button 
-            type="button" 
-            (click)="closeAddModal()" 
-            class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:bg-white/5 transition cursor-pointer"
+          <button
+            type="button"
+            (click)="closeAddModal()"
+            class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant hover:bg-on-surface/5 transition cursor-pointer"
           >
             Cancelar
           </button>
-          <button 
-            type="submit" 
-            class="rounded-lg bg-[#1D6B4F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#185841] transition cursor-pointer border-0 outline-none"
+          <button
+            type="submit"
+            class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:opacity-90 transition cursor-pointer border-0 outline-none"
           >
             Registrar
           </button>
@@ -174,10 +174,10 @@
 <!-- Modal: Editar Personal -->
 @if (showEditModal && editingUser) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in" (click)="closeEditModal()">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#15191c] p-6 shadow-2xl" (click)="$event.stopPropagation()">
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
       <div class="mb-4 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-white uppercase tracking-wide">Editar Detalles de Personal</h3>
-        <button (click)="closeEditModal()" class="text-gray-400 hover:text-white transition bg-transparent border-0 cursor-pointer">
+        <h3 class="text-lg font-bold text-on-surface uppercase tracking-wide">Editar Detalles de Personal</h3>
+        <button (click)="closeEditModal()" class="text-on-surface-variant hover:text-on-surface transition bg-transparent border-0 cursor-pointer">
           <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -186,49 +186,49 @@
 
       <form (ngSubmit)="submitEditUser()" class="space-y-4">
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Nombre completo</label>
-          <input 
-            type="text" 
-            [(ngModel)]="editUserName" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Nombre completo</label>
+          <input
+            type="text"
+            [(ngModel)]="editUserName"
             name="editUserName"
-            placeholder="Ej. Carlos Mendoza" 
+            placeholder="Ej. Carlos Mendoza"
             required
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Correo electrónico</label>
-          <input 
-            type="email" 
-            [(ngModel)]="editUserEmail" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Correo electrónico</label>
+          <input
+            type="email"
+            [(ngModel)]="editUserEmail"
             name="editUserEmail"
-            placeholder="Ej. carlos@logired.com" 
+            placeholder="Ej. carlos@logired.com"
             required
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-gray-300">Rol asignado</label>
-          <select 
-            [(ngModel)]="editUserRole" 
+          <label class="mb-1 block text-sm font-medium text-on-surface-variant">Rol asignado</label>
+          <select
+            [(ngModel)]="editUserRole"
             name="editUserRole"
-            class="w-full rounded-lg border border-white/10 bg-[#0b0f12] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/50"
+            class="w-full rounded-lg border border-outline-variant/30 bg-surface px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/60"
           >
             <option [value]="1">Administrador (Control Total)</option>
             <option [value]="2">Trabajador (Solo Validación)</option>
           </select>
         </div>
         <div class="pt-4 flex justify-end gap-3">
-          <button 
-            type="button" 
-            (click)="closeEditModal()" 
-            class="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 hover:bg-white/5 transition cursor-pointer"
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant hover:bg-on-surface/5 transition cursor-pointer"
           >
             Cancelar
           </button>
-          <button 
-            type="submit" 
-            class="rounded-lg bg-[#1D6B4F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#185841] transition cursor-pointer border-0 outline-none"
+          <button
+            type="submit"
+            class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary hover:opacity-90 transition cursor-pointer border-0 outline-none"
           >
             Guardar Cambios
           </button>
