@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { API_BASE_URL } from '../../core/config/api.config';
 import { AuthSessionService } from '../../core/auth/auth-session.service';
+import { ImageLightboxService } from '../image-lightbox/image-lightbox.service';
 
 /**
  * Muestra un documento privado de Firebase Storage obtenido vía
@@ -32,7 +33,13 @@ import { AuthSessionService } from '../../core/auth/auth-session.service';
         <span>{{ errorMessage() }}</span>
       </div>
     } @else if (objectUrl()) {
-      <img [src]="objectUrl()" [alt]="alt" [class]="imgClass" />
+      <img
+        [src]="objectUrl()"
+        [alt]="alt"
+        [class]="imgClass"
+        class="cursor-zoom-in"
+        (click)="openLightbox()"
+      />
     } @else {
       <div class="flex h-full w-full items-center justify-center text-[10px] text-on-surface-variant/60" [class]="containerClass">
         Sin documento
@@ -50,6 +57,7 @@ export class PrivateImageComponent implements OnChanges {
   private readonly session = inject(AuthSessionService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly lightbox = inject(ImageLightboxService);
 
   readonly objectUrl = signal<string | null>(null);
   readonly loading = signal<boolean>(false);
@@ -90,6 +98,13 @@ export class PrivateImageComponent implements OnChanges {
           }
         },
       });
+  }
+
+  openLightbox(): void {
+    const url = this.objectUrl();
+    if (url) {
+      this.lightbox.open([url]);
+    }
   }
 
   private mapError(status: number | undefined): string {

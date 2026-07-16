@@ -8,6 +8,7 @@ import { AuthSessionService } from '../../../../../core/auth/auth-session.servic
 import { API_BASE_URL } from '../../../../../core/config/api.config';
 import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
 import { PrivateImageComponent } from '../../../../../shared/private-image/private-image.component';
+import { ImageLightboxService } from '../../../../../shared/image-lightbox/image-lightbox.service';
 
 @Component({
   selector: 'app-validation',
@@ -19,6 +20,7 @@ import { PrivateImageComponent } from '../../../../../shared/private-image/priva
 export class ValidationComponent implements OnInit {
   readonly state = inject(DriversPanelState);
   readonly session = inject(AuthSessionService);
+  private readonly lightbox = inject(ImageLightboxService);
 
   // ── Modal Signals ──────────────────────────────────────────────────
   readonly showApproveConfirmModal = signal<boolean>(false);
@@ -27,13 +29,6 @@ export class ValidationComponent implements OnInit {
   readonly rejectReason = signal<string>('');
 
   readonly profileDropdownOpen = signal<boolean>(false);
-
-  // Signal for simple document/profile image modal expansion
-  readonly activeModalImage = signal<string | null>(null);
-
-  // Signals for vehicle image carousel modal
-  readonly carImagesModalList = signal<string[]>([]);
-  readonly carImagesModalIndex = signal<number>(0);
 
   ngOnInit(): void {
     this.state.loadPendingDrivers();
@@ -103,6 +98,7 @@ export class ValidationComponent implements OnInit {
     return `${this.apiBaseUrl}/${cleanUrl}`;
   }
 
+  /** Abre el carrete de fotos del vehículo (todas las vistas disponibles) en el visor flotante. */
   openCarCarousel(car: any, startIndex: number = 0): void {
     if (!car) return;
     const images: string[] = [];
@@ -111,21 +107,12 @@ export class ValidationComponent implements OnInit {
     if (car.rightview_image) images.push(this.formatImageUrl(car.rightview_image));
     if (car.backview_image) images.push(this.formatImageUrl(car.backview_image));
     if (car.space_image) images.push(this.formatImageUrl(car.space_image));
-    this.carImagesModalList.set(images);
-    this.carImagesModalIndex.set(startIndex);
+    if (car.plates_image) images.push(this.formatImageUrl(car.plates_image));
+    this.lightbox.open(images, startIndex);
   }
 
-  nextCarImage(event: Event): void {
-    event.stopPropagation();
-    const list = this.carImagesModalList();
-    if (list.length === 0) return;
-    this.carImagesModalIndex.update((idx) => (idx + 1) % list.length);
-  }
-
-  prevCarImage(event: Event): void {
-    event.stopPropagation();
-    const list = this.carImagesModalList();
-    if (list.length === 0) return;
-    this.carImagesModalIndex.update((idx) => (idx - 1 + list.length) % list.length);
+  openProfileImage(url: string | undefined): void {
+    if (!url) return;
+    this.lightbox.open([url]);
   }
 }

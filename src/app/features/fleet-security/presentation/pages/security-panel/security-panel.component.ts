@@ -6,18 +6,21 @@ import { AuthSessionService } from '../../../../../core/auth/auth-session.servic
 import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
 import { PrivateImageComponent } from '../../../../../shared/private-image/private-image.component';
 import { RouteMapComponent } from '../../../../../shared/route-map/route-map.component';
-import { RideRecord, getRideId, getRideStatusLabel, toDisplayEntries } from '../../../data/models/security.dto';
+import { StatBarChartComponent } from '../../../../../shared/stat-bar-chart/stat-bar-chart.component';
+import { ImageLightboxService } from '../../../../../shared/image-lightbox/image-lightbox.service';
+import { RideRecord, getRideId, getRideStatusLabel, toChartEntries, toDisplayEntries } from '../../../data/models/security.dto';
 
 @Component({
   selector: 'app-security-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, PrivateImageComponent, RouteMapComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, PrivateImageComponent, RouteMapComponent, StatBarChartComponent],
   providers: [SecurityState],
   templateUrl: './security-panel.component.html',
 })
 export class SecurityPanelComponent implements OnInit {
   readonly state = inject(SecurityState);
   readonly session = inject(AuthSessionService);
+  private readonly lightbox = inject(ImageLightboxService);
 
   readonly showBlockModal = signal<boolean>(false);
   readonly blockReason = signal<string>('');
@@ -36,6 +39,15 @@ export class SecurityPanelComponent implements OnInit {
 
   entriesOf(record: Record<string, unknown> | RideRecord | null): Array<{ key: string; value: string }> {
     return toDisplayEntries(record);
+  }
+
+  chartEntriesOf(record: Record<string, unknown> | null): ReturnType<typeof toChartEntries> {
+    return toChartEntries(record);
+  }
+
+  openImage(url: string | undefined): void {
+    if (!url) return;
+    this.lightbox.open([url]);
   }
 
   // ── Bloqueo / desbloqueo (reusa approve/reject de la validación) ─────

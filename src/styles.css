@@ -39,6 +39,12 @@
   --md-surface-container: #e9efeb;
   --md-surface-container-high: #e3eae5;
   --md-surface-container-highest: #dee4e0;
+
+  /* Paleta de estado para gráficas (validada con validate_palette.js — ver dataviz skill). */
+  --chart-good: #15803d;
+  --chart-warning: #ca8a04;
+  --chart-critical: #dc2626;
+  --chart-neutral: #0369a1;
 }
 
 :root[data-theme='dark'] {
@@ -72,6 +78,11 @@
   --md-surface-container: #1b211e;
   --md-surface-container-high: #252b29;
   --md-surface-container-highest: #303633;
+
+  --chart-good: #2fa968;
+  --chart-warning: #b8860b;
+  --chart-critical: #d9584f;
+  --chart-neutral: #3d8fc0;
 }
 
 /* Sin preferencia guardada: sigue la preferencia del sistema operativo. */
@@ -107,6 +118,11 @@
     --md-surface-container: #1b211e;
     --md-surface-container-high: #252b29;
     --md-surface-container-highest: #303633;
+
+    --chart-good: #2fa968;
+    --chart-warning: #b8860b;
+    --chart-critical: #d9584f;
+    --chart-neutral: #3d8fc0;
   }
 }
 
@@ -141,6 +157,11 @@
   --color-surface-container: var(--md-surface-container);
   --color-surface-container-high: var(--md-surface-container-high);
   --color-surface-container-highest: var(--md-surface-container-highest);
+
+  --color-chart-good: var(--chart-good);
+  --color-chart-warning: var(--chart-warning);
+  --color-chart-critical: var(--chart-critical);
+  --color-chart-neutral: var(--chart-neutral);
 }
 
 body {

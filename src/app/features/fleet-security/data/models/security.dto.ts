@@ -135,3 +135,36 @@ function formatValue(value: unknown): string {
   if (typeof value === 'object') return JSON.stringify(value);
   return String(value);
 }
+
+export type ChartStatus = 'good' | 'warning' | 'critical' | 'neutral';
+
+export interface ChartEntry {
+  label: string;
+  value: number;
+  status: ChartStatus;
+}
+
+const CHART_EXCLUDED_KEYS = /^(id|id_.*|.*_id|driver_id|page|limit|total_pages)$/i;
+
+/** Adivina la categoría semántica de un status a partir de su texto (no hay esquema fijo del backend). */
+export function classifyStatus(label: string): ChartStatus {
+  const text = label.toLowerCase();
+  if (/complet|aprob|activ|finaliz/.test(text)) return 'good';
+  if (/cancel|rechaz|fallid|error/.test(text)) return 'critical';
+  if (/pendient|asignad|espera/.test(text)) return 'warning';
+  return 'neutral';
+}
+
+/**
+ * Extrae de un registro de estadísticas (esquema desconocido, ver comentario arriba)
+ * únicamente los campos numéricos graficables, ignorando ids/paginación.
+ */
+export function toChartEntries(record: Record<string, unknown> | null | undefined): ChartEntry[] {
+  if (!record) return [];
+  return Object.entries(record)
+    .filter(([key, value]) => !CHART_EXCLUDED_KEYS.test(key) && typeof value === 'number' && Number.isFinite(value))
+    .map(([key, value]) => {
+      const label = prettifyKey(key);
+      return { label, value: value as number, status: classifyStatus(label) };
+    });
+}

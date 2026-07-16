@@ -24,10 +24,10 @@
       </div>
     }
 
-    <div class="grid gap-6 lg:grid-cols-[380px_1fr]">
+    <div class="grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
       <!-- COLUMNA IZQUIERDA: lista de conductores aprobados -->
-      <aside class="rounded-2xl border border-outline-variant/30 bg-surface-container p-4 shadow-xl shadow-black/10 flex flex-col">
-        <div class="mb-3">
+      <aside class="rounded-2xl border border-outline-variant/30 bg-surface-container p-4 shadow-xl shadow-black/10 flex flex-col lg:max-h-[calc(100vh-220px)]">
+        <div class="mb-3 shrink-0">
           <input
             type="text"
             [ngModel]="state.searchQuery()"
@@ -37,14 +37,14 @@
           />
         </div>
 
-        <div class="mb-3 flex items-center justify-between">
+        <div class="mb-3 flex items-center justify-between shrink-0">
           <h2 class="text-sm font-bold text-on-surface">Conductores</h2>
           <span class="rounded-full bg-primary/15 px-3 py-1 text-xs text-primary">
             {{ state.filteredDrivers().length }}
           </span>
         </div>
 
-        <div class="space-y-2.5 overflow-y-auto max-h-[600px]">
+        <div class="space-y-2.5 overflow-y-auto min-h-0">
           @for (driver of state.filteredDrivers(); track driver.id_user) {
             <button
               type="button"
@@ -79,7 +79,7 @@
       </aside>
 
       <!-- COLUMNA DERECHA: expediente del conductor seleccionado -->
-      <section class="flex flex-col gap-6">
+      <section class="flex flex-col gap-6 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-1">
         @if (state.isLoadingDetail()) {
           <div class="rounded-2xl border border-outline-variant/30 bg-surface-container p-12 shadow-xl shadow-black/10 flex items-center justify-center text-on-surface-variant text-sm">
             Cargando expediente…
@@ -92,7 +92,8 @@
                 <img
                   [src]="driver.image_url || 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=160&q=80'"
                   [alt]="driver.name"
-                  class="h-20 w-20 rounded-2xl border border-outline-variant/30 object-cover"
+                  class="h-20 w-20 rounded-2xl border border-outline-variant/30 object-cover cursor-zoom-in"
+                  (click)="openImage(driver.image_url)"
                 />
                 <div>
                   <h2 class="text-2xl font-bold text-on-surface">{{ driver.name }} {{ driver.lastname }}</h2>
@@ -193,15 +194,8 @@
           <!-- Estadísticas de viajes del conductor -->
           @if (state.selectedDriverStatistics(); as stats) {
             <article class="rounded-2xl border border-outline-variant/30 bg-surface-container p-6 shadow-xl shadow-black/10">
-              <h3 class="mb-3 text-sm font-bold text-on-surface">Estadísticas de Viajes</h3>
-              <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
-                @for (entry of entriesOf(stats); track entry.key) {
-                  <div class="rounded-lg border border-outline-variant/20 bg-surface-container-low px-3 py-2">
-                    <p class="text-[9px] uppercase text-on-surface-variant">{{ entry.key }}</p>
-                    <p class="text-sm font-bold text-primary truncate">{{ entry.value }}</p>
-                  </div>
-                }
-              </div>
+              <h3 class="mb-4 text-sm font-bold text-on-surface">Estadísticas de Viajes (completados, cancelados y demás)</h3>
+              <app-stat-bar-chart [data]="chartEntriesOf(stats)"></app-stat-bar-chart>
             </article>
           }
 
