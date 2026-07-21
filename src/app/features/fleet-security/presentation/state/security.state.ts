@@ -9,6 +9,9 @@ export class SecurityState {
   private readonly repository = inject(SecurityRepository);
   private readonly driverPanelRepository = inject(DriverPanelRepository);
 
+  // ── Vista activa: 'active' o 'blocked' ──────────────────────────────
+  readonly activeView = signal<'active' | 'blocked'>('active');
+
   // ── Listado de conductores aprobados (los únicos relevantes aquí) ────
   readonly approvedDrivers = signal<PendingDriverDTO[]>([]);
   readonly searchQuery = signal<string>('');
@@ -29,6 +32,25 @@ export class SecurityState {
 
   readonly totalCount = computed(() => this.approvedDrivers().length);
 
+  // ── Listado de conductores bloqueados ─────────────────────────────────
+  readonly blockedDrivers = signal<PendingDriverDTO[]>([]);
+  readonly blockedSearchQuery = signal<string>('');
+  readonly isLoadingBlockedList = signal<boolean>(false);
+
+  readonly filteredBlockedDrivers = computed(() => {
+    const list = this.blockedDrivers();
+    const term = this.blockedSearchQuery().trim().toLowerCase();
+    if (!term) return list;
+    return list.filter(
+      (d) =>
+        `${d.name} ${d.lastname}`.toLowerCase().includes(term) ||
+        d.email.toLowerCase().includes(term) ||
+        String(d.id_user).includes(term)
+    );
+  });
+
+  readonly blockedCount = computed(() => this.blockedDrivers().length);
+
   // ── Expediente del conductor seleccionado ────────────────────────────
   readonly selectedDriverId = signal<number | null>(null);
   readonly selectedDriverDetail = signal<DriverDetailDTO | null>(null);
@@ -36,6 +58,7 @@ export class SecurityState {
   readonly selectedDriverStatistics = signal<Record<string, unknown> | null>(null);
   readonly isLoadingDetail = signal<boolean>(false);
   readonly isBlocking = signal<boolean>(false);
+  readonly isUnblocking = signal<boolean>(false);
 
   // ── Viajes del conductor seleccionado ────────────────────────────────
   readonly driverTrips = signal<RideRecord[]>([]);
@@ -47,6 +70,16 @@ export class SecurityState {
   readonly selectedTripId = signal<number | null>(null);
   readonly selectedTripTracking = signal<RideRecord[]>([]);
   readonly isLoadingTracking = signal<boolean>(false);
+
+  switchView(view: 'active' | 'blocked'): void {
+    this.activeView.set(view);
+    this.selectedDriverId.set(null);
+    this.selectedDriverDetail.set(null);
+    this.selectedDriverProfile.set(null);
+    this.selectedDriverStatistics.set(null);
+    this.driverTrips.set([]);
+    this.clearTripSelection();
+  }
 
   loadDrivers(): void {
     this.isLoadingList.set(true);
@@ -60,6 +93,23 @@ export class SecurityState {
       error: () => {
         this.errorMessage.set('No se pudo cargar la lista de conductores.');
         this.isLoadingList.set(false);
+      },
+    });
+
+    // Cargar también la lista de bloqueados
+    this.loadBlockedDrivers();
+  }
+
+  loadBlockedDrivers(): void {
+    this.isLoadingBlockedList.set(true);
+
+    this.driverPanelRepository.getDriversByStatus('blocked').subscribe({
+      next: (drivers) => {
+        this.blockedDrivers.set(drivers);
+        this.isLoadingBlockedList.set(false);
+      },
+      error: () => {
+        this.isLoadingBlockedList.set(false);
       },
     });
   }
@@ -133,20 +183,24 @@ export class SecurityState {
   }
 
   /**
-   * Bloquea al conductor: reutiliza /admin/drivers/{id}/reject (único endpoint real
-   * que cambia approved a false). Como esta pantalla sólo muestra aprobados, al
-   * bloquear se retira de la lista y se limpia la selección.
+   * Bloquea al conductor usando POST /admin/drivers/{id}/block.
+   * Al bloquear se retira de la lista de activos y se agrega a la de bloqueados.
    */
   blockDriver(reason: string): void {
     const driverId = this.selectedDriverId();
     if (driverId == null || !reason.trim()) return;
 
     this.isBlocking.set(true);
-    this.driverPanelRepository.rejectDriver(driverId, reason.trim()).subscribe({
+    this.driverPanelRepository.blockDriver(driverId, reason.trim()).subscribe({
       next: (success) => {
         this.isBlocking.set(false);
         if (success) {
+          // Mover el conductor de la lista de activos a bloqueados
+          const blockedDriver = this.approvedDrivers().find((d) => d.id_user === driverId);
           this.approvedDrivers.set(this.approvedDrivers().filter((d) => d.id_user !== driverId));
+          if (blockedDriver) {
+            this.blockedDrivers.set([...this.blockedDrivers(), blockedDriver]);
+          }
           this.selectedDriverId.set(null);
           this.selectedDriverDetail.set(null);
           this.selectedDriverProfile.set(null);
@@ -160,6 +214,42 @@ export class SecurityState {
       error: () => {
         this.isBlocking.set(false);
         this.errorMessage.set('Error de conexión al intentar bloquear.');
+      },
+    });
+  }
+
+  /**
+   * Desbloquea al conductor usando POST /admin/drivers/{id}/approve.
+   * Al desbloquear se retira de la lista de bloqueados y se agrega a la de activos.
+   */
+  unblockDriver(): void {
+    const driverId = this.selectedDriverId();
+    if (driverId == null) return;
+
+    this.isUnblocking.set(true);
+    this.driverPanelRepository.approveDriver(driverId).subscribe({
+      next: (success) => {
+        this.isUnblocking.set(false);
+        if (success) {
+          // Mover el conductor de la lista de bloqueados a activos
+          const unblockedDriver = this.blockedDrivers().find((d) => d.id_user === driverId);
+          this.blockedDrivers.set(this.blockedDrivers().filter((d) => d.id_user !== driverId));
+          if (unblockedDriver) {
+            this.approvedDrivers.set([...this.approvedDrivers(), unblockedDriver]);
+          }
+          this.selectedDriverId.set(null);
+          this.selectedDriverDetail.set(null);
+          this.selectedDriverProfile.set(null);
+          this.selectedDriverStatistics.set(null);
+          this.driverTrips.set([]);
+          this.clearTripSelection();
+        } else {
+          this.errorMessage.set('No se pudo desbloquear al conductor.');
+        }
+      },
+      error: () => {
+        this.isUnblocking.set(false);
+        this.errorMessage.set('Error de conexión al intentar desbloquear.');
       },
     });
   }

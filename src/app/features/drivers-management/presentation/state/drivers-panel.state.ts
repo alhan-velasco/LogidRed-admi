@@ -46,7 +46,7 @@ export class DriversPanelState {
     this.allDrivers().filter((driver) => driver.status === 'pending').length
   );
   
-  readonly rejectedCount = computed(() => 
+  readonly rejectedCount = computed(() =>
     this.allDrivers().filter((driver) => driver.status === 'rejected').length
   );
 
@@ -97,7 +97,6 @@ export class DriversPanelState {
           status: 'rejected' as const,
           approved: false
         }));
-
         this.allDrivers.set([...mappedPending, ...mappedAccepted, ...mappedRejected]);
         this.isLoading.set(false);
 

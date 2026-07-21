@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DriversPanelState } from '../../state/drivers-panel.state';
-import { DriverDocumentDTO } from '../../../data/models/driver-panel.dto';
+import { DriverDocumentDTO, formatBirthdate } from '../../../data/models/driver-panel.dto';
 import { AuthSessionService } from '../../../../../core/auth/auth-session.service';
 import { API_BASE_URL } from '../../../../../core/config/api.config';
 import { NavbarComponent } from '../../../../../core/layout/navbar/navbar.component';
@@ -81,7 +81,11 @@ export class ValidationComponent implements OnInit {
       ?.documents?.find((document) => document.id_document_type === typeId);
   }
 
-  getSelectedDriverStatus(): 'pending' | 'approved' | 'rejected' | undefined {
+  formatBirthdate(value: string | null | undefined): string {
+    return formatBirthdate(value);
+  }
+
+  getSelectedDriverStatus(): 'pending' | 'approved' | 'rejected' | 'blocked' | undefined {
     const selected = this.state.selectedDriver();
     if (!selected) return undefined;
     return this.state.allDrivers().find((d) => d.id_user === selected.id_user)?.status;

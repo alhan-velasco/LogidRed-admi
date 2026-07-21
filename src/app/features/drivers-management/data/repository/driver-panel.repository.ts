@@ -15,7 +15,7 @@ export class DriverPanelRepository {
       .pipe(catchError(() => of([])));
   }
 
-  getDriversByStatus(status: 'pending' | 'accepted' | 'rejected'): Observable<PendingDriverDTO[]> {
+  getDriversByStatus(status: 'pending' | 'accepted' | 'rejected' | 'blocked'): Observable<PendingDriverDTO[]> {
     return this.http
       .get<any>(`${this.baseUrl}/admin/drivers/status/${status}`)
       .pipe(
@@ -65,6 +65,17 @@ export class DriverPanelRepository {
   rejectDriver(id: number, reason: string): Observable<boolean> {
     return this.http
       .post(`${this.baseUrl}/admin/drivers/${id}/reject`, {
+        rejection_reason: reason,
+      })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
+  }
+
+  blockDriver(id: number, reason: string): Observable<boolean> {
+    return this.http
+      .post(`${this.baseUrl}/admin/drivers/${id}/block`, {
         rejection_reason: reason,
       })
       .pipe(

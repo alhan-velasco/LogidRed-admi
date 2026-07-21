@@ -41,3 +41,26 @@ export interface DriverDetailDTO {
   cars: DriverCarDTO[];
   documents: DriverDocumentDTO[];
 }
+
+/** Muestra fechas de nacimiento sin convertirlas a UTC, evitando cambiar el día por zona horaria. */
+export function formatBirthdate(value: string | null | undefined): string {
+  if (!value) return 'Sin registro';
+
+  const isoDate = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  const localDate = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  const [year, month, day] = isoDate
+    ? [Number(isoDate[1]), Number(isoDate[2]), Number(isoDate[3])]
+    : localDate
+      ? [Number(localDate[3]), Number(localDate[2]), Number(localDate[1])]
+      : [NaN, NaN, NaN];
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return value;
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return value;
+
+  return new Intl.DateTimeFormat('es-MX', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}

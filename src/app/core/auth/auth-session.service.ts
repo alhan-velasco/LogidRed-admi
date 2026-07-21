@@ -120,6 +120,12 @@ export class AuthSessionService {
    */
   getUserName(): string {
     const payload = this.decodePayload();
+    const firstName = payload?.['first_name'] ?? payload?.['given_name'] ?? payload?.['nombre'];
+    const lastName = payload?.['last_name'] ?? payload?.['lastname'] ?? payload?.['surname'] ?? payload?.['apellido'];
+    if (typeof firstName === 'string' && firstName.trim()) {
+      return `${firstName.trim()} ${typeof lastName === 'string' ? lastName.trim() : ''}`.trim();
+    }
+
     const candidate =
       payload?.['name'] ??
       payload?.['nombre'] ??
@@ -154,6 +160,13 @@ export class AuthSessionService {
     }
 
     return '';
+  }
+
+  getUserId(): number | null {
+    const payload = this.decodePayload();
+    const value = payload?.['id_admin'] ?? payload?.['id_user'] ?? payload?.['user_id'] ?? payload?.['id'];
+    const id = Number(value);
+    return Number.isFinite(id) ? id : null;
   }
 
   private decodePayload(): Record<string, any> | null {

@@ -9,6 +9,7 @@ import { RouteMapComponent } from '../../../../../shared/route-map/route-map.com
 import { StatBarChartComponent } from '../../../../../shared/stat-bar-chart/stat-bar-chart.component';
 import { ImageLightboxService } from '../../../../../shared/image-lightbox/image-lightbox.service';
 import { RideRecord, getRideId, getRideStatusLabel, toChartEntries, toDisplayEntries } from '../../../data/models/security.dto';
+import { DriverDetailDTO, formatBirthdate } from '../../../../drivers-management/data/models/driver-panel.dto';
 
 @Component({
   selector: 'app-security-panel',
@@ -24,6 +25,7 @@ export class SecurityPanelComponent implements OnInit {
 
   readonly showBlockModal = signal<boolean>(false);
   readonly blockReason = signal<string>('');
+  readonly showUnblockConfirmModal = signal<boolean>(false);
 
   ngOnInit(): void {
     this.state.loadDrivers();
@@ -45,12 +47,37 @@ export class SecurityPanelComponent implements OnInit {
     return toChartEntries(record);
   }
 
+  getApprovedByName(driver: DriverDetailDTO): string {
+    const data = driver as DriverDetailDTO & Record<string, unknown>;
+    const approval = data['approved_by'] ?? data['approvedBy'] ?? data['approver'] ?? data['approved_user'];
+
+    if (typeof approval === 'string' && approval.trim()) return approval.trim();
+    if (approval && typeof approval === 'object') {
+      const approver = approval as Record<string, unknown>;
+      const fullName = approver['full_name'] ?? approver['fullname'] ?? approver['name'];
+      if (typeof fullName === 'string' && fullName.trim()) return fullName.trim();
+
+      const firstName = typeof approver['first_name'] === 'string' ? approver['first_name'].trim() : '';
+      const lastName = typeof (approver['last_name'] ?? approver['lastname']) === 'string'
+        ? String(approver['last_name'] ?? approver['lastname']).trim()
+        : '';
+      if (firstName || lastName) return `${firstName} ${lastName}`.trim();
+    }
+
+    const directName = data['approved_by_name'] ?? data['approver_name'] ?? data['approved_user_name'];
+    return typeof directName === 'string' && directName.trim() ? directName.trim() : 'Sin registro';
+  }
+
+  formatBirthdate(value: string | null | undefined): string {
+    return formatBirthdate(value);
+  }
+
   openImage(url: string | undefined): void {
     if (!url) return;
     this.lightbox.open([url]);
   }
 
-  // ── Bloqueo / desbloqueo (reusa approve/reject de la validación) ─────
+  // ── Bloqueo ──────────────────────────────────────────────────────────
   openBlockModal(): void {
     this.blockReason.set('');
     this.showBlockModal.set(true);
@@ -66,6 +93,20 @@ export class SecurityPanelComponent implements OnInit {
     this.state.blockDriver(this.blockReason().trim());
     this.showBlockModal.set(false);
     this.blockReason.set('');
+  }
+
+  // ── Desbloqueo ───────────────────────────────────────────────────────
+  openUnblockModal(): void {
+    this.showUnblockConfirmModal.set(true);
+  }
+
+  cancelUnblock(): void {
+    this.showUnblockConfirmModal.set(false);
+  }
+
+  confirmUnblock(): void {
+    this.showUnblockConfirmModal.set(false);
+    this.state.unblockDriver();
   }
 
   /** Genera y descarga un reporte de texto con todos los datos reales cargados del conductor seleccionado. */
@@ -91,8 +132,9 @@ export class SecurityPanelComponent implements OnInit {
     lines.push(`- Nombre: ${detail.name} ${detail.lastname}`);
     lines.push(`- Correo: ${detail.email}`);
     lines.push(`- Teléfono: ${detail.numberphone}`);
-    lines.push(`- Fecha de nacimiento: ${detail.birthdate || 'Sin registro'}`);
+    lines.push(`- Fecha de nacimiento: ${formatBirthdate(detail.birthdate)}`);
     lines.push(`- Aprobado: ${detail.approved ? 'Sí' : 'No'}`);
+    lines.push(`- Aprobado por: ${this.getApprovedByName(detail)}`);
     if (profile) {
       lines.push(`- Calificación global: ${profile.global_rating} (${profile.total_reviews} reseñas)`);
     }

@@ -69,12 +69,19 @@
                   </p>
                   <p class="truncate text-xs text-on-surface-variant">{{ driver.email }}</p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] text-primary">
-                      INE Pending
-                    </span>
-                    <span class="rounded-full bg-error/15 px-2 py-0.5 text-[10px] text-error">
-                      Review Required
-                    </span>
+                    @if (driver.status === 'approved') {
+                      <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                        Aprobado
+                      </span>
+                    } @else if (driver.status === 'pending') {
+                      <span class="rounded-full bg-tertiary/15 px-2 py-0.5 text-[10px] font-semibold text-tertiary">
+                        Pendiente
+                      </span>
+                    } @else if (driver.status === 'rejected') {
+                      <span class="rounded-full bg-error/15 px-2 py-0.5 text-[10px] font-semibold text-error">
+                        Rechazado
+                      </span>
+                    }
                   </div>
                 </div>
               </div>
@@ -105,7 +112,7 @@
                 <h2 class="font-serif text-2xl text-on-surface">{{ driver.name }} {{ driver.lastname }}</h2>
                 <p class="text-sm text-on-surface-variant">{{ driver.email }}</p>
                 <p class="text-sm text-on-surface-variant">{{ driver.numberphone }}</p>
-                <p class="text-sm text-on-surface-variant/80">Nacimiento: {{ driver.birthdate || 'Sin registro' }}</p>
+                <p class="text-sm text-on-surface-variant/80">Nacimiento: {{ formatBirthdate(driver.birthdate) }}</p>
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">

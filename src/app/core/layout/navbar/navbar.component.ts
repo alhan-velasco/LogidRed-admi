@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthSessionService } from '../../auth/auth-session.service';
@@ -60,7 +60,7 @@ import { ThemeService } from '../../theme/theme.service';
               <div class="size-8 bg-primary rounded-full flex justify-center items-center shrink-0">
                 <span class="text-on-primary text-sm font-bold font-['Outfit'] leading-none">{{ userInitial() }}</span>
               </div>
-              <span class="text-on-surface text-base font-normal font-['Outfit'] leading-none">{{ session.getUserName() }}</span>
+              <span class="text-on-surface text-base font-normal font-['Outfit'] leading-none">{{ loggedUserName() }}</span>
               <svg class="h-4 w-4 text-on-surface-variant transition" [class.rotate-180]="profileDropdownOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -144,7 +144,7 @@ import { ThemeService } from '../../theme/theme.service';
     }
   `,
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   readonly session = inject(AuthSessionService);
   readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
@@ -155,14 +155,35 @@ export class NavbarComponent {
   readonly isUpdatingPassword = signal<boolean>(false);
   readonly passwordError = signal<string | null>(null);
   readonly passwordSuccess = signal<string | null>(null);
+  readonly loggedUserName = signal<string>(this.getSessionDisplayName());
   oldPassword = '';
   newPassword = '';
   confirmPassword = '';
 
   readonly userInitial = computed(() => {
-    const name = this.session.getUserName();
+    const name = this.loggedUserName();
     return name.charAt(0).toUpperCase();
   });
+
+  ngOnInit(): void {
+    const id = this.session.getUserId();
+    const email = this.session.getUserEmail().toLowerCase();
+    if (id == null && !email) return;
+
+    this.usersRepository.getUsers().subscribe({
+      next: (users) => {
+        const user = users.find((candidate) =>
+          candidate.id_admin === id || candidate.email?.toLowerCase() === email
+        );
+        if (user?.name?.trim()) this.loggedUserName.set(user.name.trim());
+      },
+    });
+  }
+
+  private getSessionDisplayName(): string {
+    const name = this.session.getUserName();
+    return name !== 'Usuario' ? name : this.session.getUserEmail() || 'Sesión activa';
+  }
 
   onUpdatePassword(): void {
     this.profileDropdownOpen.set(false);

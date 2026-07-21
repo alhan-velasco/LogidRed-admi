@@ -9,9 +9,15 @@
           Perfiles, viajes, rutas, estadísticas y documentos de conductores activos
         </p>
       </div>
-      <div class="rounded-2xl border border-primary/30 bg-surface-container px-5 py-3 text-right shadow-lg shadow-black/10">
-        <p class="text-xs text-on-surface-variant">Conductores activos</p>
-        <p class="text-2xl font-semibold text-primary">{{ state.totalCount() }}</p>
+      <div class="flex items-center gap-4">
+        <button type="button" (click)="state.switchView('active')" [class.ring-2]="state.activeView() === 'active'" class="rounded-2xl border border-primary/30 bg-surface-container px-5 py-3 text-right shadow-lg shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-primary/50">
+          <p class="text-xs text-on-surface-variant">Conductores activos</p>
+          <p class="text-2xl font-semibold text-primary">{{ state.totalCount() }}</p>
+        </button>
+        <button type="button" (click)="state.switchView('blocked')" [class.ring-2]="state.activeView() === 'blocked'" class="rounded-2xl border border-error/30 bg-surface-container px-5 py-3 text-right shadow-lg shadow-black/10 transition hover:bg-surface-container-high focus:outline-none focus:ring-error/50">
+          <p class="text-xs text-on-surface-variant">Bloqueados</p>
+          <p class="text-2xl font-semibold text-error">{{ state.blockedCount() }}</p>
+        </button>
       </div>
     </div>
 
@@ -25,57 +31,112 @@
     }
 
     <div class="grid gap-6 lg:grid-cols-[380px_1fr] lg:items-start">
-      <!-- COLUMNA IZQUIERDA: lista de conductores aprobados -->
+      <!-- COLUMNA IZQUIERDA: lista de conductores -->
       <aside class="rounded-2xl border border-outline-variant/30 bg-surface-container p-4 shadow-xl shadow-black/10 flex flex-col lg:max-h-[calc(100vh-220px)]">
+        <!-- Búsqueda -->
         <div class="mb-3 shrink-0">
-          <input
-            type="text"
-            [ngModel]="state.searchQuery()"
-            (ngModelChange)="state.searchQuery.set($event)"
-            placeholder="Buscar por nombre, correo o ID..."
-            class="w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/20 transition"
-          />
+          @if (state.activeView() === 'active') {
+            <input
+              type="text"
+              [ngModel]="state.searchQuery()"
+              (ngModelChange)="state.searchQuery.set($event)"
+              placeholder="Buscar por nombre, correo o ID..."
+              class="w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/20 transition"
+            />
+          } @else {
+            <input
+              type="text"
+              [ngModel]="state.blockedSearchQuery()"
+              (ngModelChange)="state.blockedSearchQuery.set($event)"
+              placeholder="Buscar conductor bloqueado..."
+              class="w-full rounded-xl border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder:text-on-surface-variant/60 focus:border-error/60 focus:outline-none focus:ring-1 focus:ring-error/20 transition"
+            />
+          }
         </div>
 
         <div class="mb-3 flex items-center justify-between shrink-0">
-          <h2 class="text-sm font-bold text-on-surface">Conductores</h2>
-          <span class="rounded-full bg-primary/15 px-3 py-1 text-xs text-primary">
-            {{ state.filteredDrivers().length }}
+          <h2 class="text-sm font-bold text-on-surface">
+            {{ state.activeView() === 'active' ? 'Conductores' : 'Conductores Bloqueados' }}
+          </h2>
+          <span class="rounded-full px-3 py-1 text-xs"
+            [class.bg-primary/15]="state.activeView() === 'active'"
+            [class.text-primary]="state.activeView() === 'active'"
+            [class.bg-error/15]="state.activeView() === 'blocked'"
+            [class.text-error]="state.activeView() === 'blocked'"
+          >
+            {{ state.activeView() === 'active' ? state.filteredDrivers().length : state.filteredBlockedDrivers().length }}
           </span>
         </div>
 
-        <div class="space-y-2.5 overflow-y-auto min-h-0">
-          @for (driver of state.filteredDrivers(); track driver.id_user) {
-            <button
-              type="button"
-              class="w-full rounded-xl border px-3 py-3 text-left transition"
-              [class.border-primary/50]="state.selectedDriverId() === driver.id_user"
-              [class.bg-primary/10]="state.selectedDriverId() === driver.id_user"
-              [class.border-outline-variant/20]="state.selectedDriverId() !== driver.id_user"
-              [class.bg-surface-container-low]="state.selectedDriverId() !== driver.id_user"
-              (click)="state.selectDriver(driver.id_user)"
-            >
-              <div class="flex items-center gap-3">
-                <img
-                  [src]="driver.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80'"
-                  [alt]="driver.name"
-                  class="h-11 w-11 rounded-full object-cover"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-on-surface">{{ driver.name }} {{ driver.lastname }}</p>
-                  <p class="truncate text-xs text-on-surface-variant">{{ driver.email }}</p>
+        <!-- Lista de conductores activos -->
+        @if (state.activeView() === 'active') {
+          <div class="space-y-2.5 overflow-y-auto min-h-0">
+            @for (driver of state.filteredDrivers(); track driver.id_user) {
+              <button
+                type="button"
+                class="w-full rounded-xl border px-3 py-3 text-left transition"
+                [class.border-primary/50]="state.selectedDriverId() === driver.id_user"
+                [class.bg-primary/10]="state.selectedDriverId() === driver.id_user"
+                [class.border-outline-variant/20]="state.selectedDriverId() !== driver.id_user"
+                [class.bg-surface-container-low]="state.selectedDriverId() !== driver.id_user"
+                (click)="state.selectDriver(driver.id_user)"
+              >
+                <div class="flex items-center gap-3">
+                  <img
+                    [src]="driver.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80'"
+                    [alt]="driver.name"
+                    class="h-11 w-11 rounded-full object-cover"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-on-surface">{{ driver.name }} {{ driver.lastname }}</p>
+                    <p class="truncate text-xs text-on-surface-variant">{{ driver.email }}</p>
+                  </div>
+                  <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary shrink-0">
+                    Activo
+                  </span>
                 </div>
-                <span class="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary shrink-0">
-                  Activo
-                </span>
+              </button>
+            } @empty {
+              <div class="rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
+                {{ state.isLoadingList() ? 'Cargando conductores…' : 'No hay conductores aprobados.' }}
               </div>
-            </button>
-          } @empty {
-            <div class="rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
-              {{ state.isLoadingList() ? 'Cargando conductores…' : 'No hay conductores aprobados.' }}
-            </div>
-          }
-        </div>
+            }
+          </div>
+        } @else {
+          <!-- Lista de conductores bloqueados -->
+          <div class="space-y-2.5 overflow-y-auto min-h-0">
+            @for (driver of state.filteredBlockedDrivers(); track driver.id_user) {
+              <button
+                type="button"
+                class="w-full rounded-xl border px-3 py-3 text-left transition"
+                [class.border-error/50]="state.selectedDriverId() === driver.id_user"
+                [class.bg-error/10]="state.selectedDriverId() === driver.id_user"
+                [class.border-outline-variant/20]="state.selectedDriverId() !== driver.id_user"
+                [class.bg-surface-container-low]="state.selectedDriverId() !== driver.id_user"
+                (click)="state.selectDriver(driver.id_user)"
+              >
+                <div class="flex items-center gap-3">
+                  <img
+                    [src]="driver.image_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&q=80'"
+                    [alt]="driver.name"
+                    class="h-11 w-11 rounded-full object-cover opacity-60"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-on-surface">{{ driver.name }} {{ driver.lastname }}</p>
+                    <p class="truncate text-xs text-on-surface-variant">{{ driver.email }}</p>
+                  </div>
+                  <span class="rounded-full bg-error/15 border border-error/30 px-2 py-0.5 text-[10px] font-semibold uppercase text-error shrink-0">
+                    Bloqueado
+                  </span>
+                </div>
+              </button>
+            } @empty {
+              <div class="rounded-xl border border-outline-variant/20 bg-surface-container-low px-4 py-6 text-center text-sm text-on-surface-variant">
+                {{ state.isLoadingBlockedList() ? 'Cargando conductores…' : 'No hay conductores bloqueados.' }}
+              </div>
+            }
+          </div>
+        }
       </aside>
 
       <!-- COLUMNA DERECHA: expediente del conductor seleccionado -->
@@ -99,7 +160,8 @@
                   <h2 class="text-2xl font-bold text-on-surface">{{ driver.name }} {{ driver.lastname }}</h2>
                   <p class="text-sm text-on-surface-variant">{{ driver.email }}</p>
                   <p class="text-sm text-on-surface-variant">{{ driver.numberphone }}</p>
-                  <p class="text-sm text-on-surface-variant/80">Nacimiento: {{ driver.birthdate || 'Sin registro' }}</p>
+                  <p class="text-sm text-on-surface-variant/80">Nacimiento: {{ formatBirthdate(driver.birthdate) }}</p>
+                  <p class="mt-1 text-sm text-on-surface-variant">Aprobado por: <span class="font-medium text-on-surface">{{ getApprovedByName(driver) }}</span></p>
                   @if (state.selectedDriverProfile(); as profile) {
                     <p class="mt-1 text-xs text-tertiary">
                       ★ {{ profile.global_rating }} · {{ profile.total_reviews }} reseñas
@@ -108,15 +170,32 @@
                 </div>
               </div>
               <div class="flex flex-wrap items-center gap-3">
-                <span class="rounded-full bg-primary/15 px-3 py-1.5 text-xs font-bold uppercase text-primary">Activo</span>
-                <button
-                  type="button"
-                  (click)="openBlockModal()"
-                  [disabled]="state.isBlocking()"
-                  class="rounded-lg border border-error/50 px-4 py-2 text-sm font-medium text-error transition hover:bg-error/10 disabled:opacity-50"
-                >
-                  Bloquear Conductor
-                </button>
+                @if (state.activeView() === 'active') {
+                  <span class="rounded-full bg-primary/15 px-3 py-1.5 text-xs font-bold uppercase text-primary">Activo</span>
+                  <button
+                    type="button"
+                    (click)="openBlockModal()"
+                    [disabled]="state.isBlocking()"
+                    class="rounded-lg border border-error/50 px-4 py-2 text-sm font-medium text-error transition hover:bg-error/10 disabled:opacity-50"
+                  >
+                    Bloquear Conductor
+                  </button>
+                } @else {
+                  <span class="inline-flex items-center gap-2 rounded-full bg-error/15 border border-error/30 px-3 py-1.5 text-xs font-bold uppercase text-error">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                    Bloqueado
+                  </span>
+                  <button
+                    type="button"
+                    (click)="openUnblockModal()"
+                    [disabled]="state.isUnblocking()"
+                    class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50"
+                  >
+                    Desbloquear Conductor
+                  </button>
+                }
                 <button
                   type="button"
                   (click)="downloadDriverReport()"
@@ -299,13 +378,13 @@
   </main>
 </div>
 
+<!-- Modal: Bloquear conductor -->
 @if (showBlockModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" (click)="cancelBlock()">
     <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
       <h3 class="text-lg font-semibold text-on-surface">Bloquear conductor</h3>
       <p class="mt-2 text-sm text-on-surface-variant">
-        Indica el motivo del bloqueo. Esto marca al conductor como no aprobado (mismo mecanismo que rechazar en la
-        validación de pendientes) y lo retira de este listado.
+        Indica el motivo del bloqueo. El conductor será marcado como bloqueado y no podrá operar hasta ser desbloqueado.
       </p>
       <textarea
         [ngModel]="blockReason()"
@@ -323,6 +402,28 @@
           class="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-on-error disabled:opacity-50"
         >
           Confirmar Bloqueo
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Confirmar desbloqueo -->
+@if (showUnblockConfirmModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4" (click)="cancelUnblock()">
+    <div class="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-surface-container-high p-6 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-semibold text-on-surface">Confirmar desbloqueo</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">
+        ¿Está seguro de que desea desbloquear y re-aprobar a este conductor? El conductor volverá a estar activo y podrá operar normalmente.
+      </p>
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" (click)="cancelUnblock()" class="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm text-on-surface-variant">Cancelar</button>
+        <button
+          type="button"
+          (click)="confirmUnblock()"
+          class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
+        >
+          Confirmar Desbloqueo
         </button>
       </div>
     </div>
