@@ -10,6 +10,7 @@ import { StatBarChartComponent } from '../../../../../shared/stat-bar-chart/stat
 import { ImageLightboxService } from '../../../../../shared/image-lightbox/image-lightbox.service';
 import { RideRecord, getRideId, getRideStatusLabel, toChartEntries, toDisplayEntries } from '../../../data/models/security.dto';
 import { DriverDetailDTO, formatBirthdate } from '../../../../drivers-management/data/models/driver-panel.dto';
+import { jsPDF } from 'jspdf';
 
 @Component({
   selector: 'app-security-panel',
@@ -109,8 +110,147 @@ export class SecurityPanelComponent implements OnInit {
     this.state.unblockDriver();
   }
 
-  /** Genera y descarga un reporte de texto con todos los datos reales cargados del conductor seleccionado. */
+  /** Genera un PDF independiente de la interfaz de administración. */
   downloadDriverReport(): void {
+    const detail = this.state.selectedDriverDetail();
+    const profile = this.state.selectedDriverProfile();
+    if (!detail) {
+      alert('Selecciona un conductor para generar el expediente.');
+      return;
+    }
+
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 18;
+    let y = 20;
+
+    // Header with LogiRed branding
+    pdf.setFillColor(13, 43, 66);
+    pdf.rect(0, 0, pageWidth, 43, 'F');
+        // Add brand logo (ensure assets/logired_logo.jpg exists)
+    // Add brand logo from JPEG file
+    pdf.addImage('assets/logired_logo.jpg', 'JPEG', margin, 8, 30, 15);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.text('LOGIRED', margin + 35, 20);
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('EXPEDIENTE DE SEGURIDAD DEL CONDUCTOR', margin + 35, 29);
+    pdf.setFontSize(8);
+    pdf.text(`Emitido el ${new Date().toLocaleString('es-MX')}`, margin + 35, 35);
+
+
+    y = 55;
+    pdf.setTextColor(13, 43, 66);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    pdf.text(`${detail.name} ${detail.lastname}`, margin, y);
+    y += 7;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(92, 106, 120);
+    pdf.text(`Conductor ID ${detail.id_user} | Estado: ${detail.approved ? 'Activo' : 'No activo'}`, margin, y);
+    y += 12;
+
+    y = this.addPdfSection(pdf, y, 'Información personal');
+    y = this.addPdfField(pdf, y, 'Correo electrónico', detail.email);
+    y = this.addPdfField(pdf, y, 'Teléfono', detail.numberphone);
+    y = this.addPdfField(pdf, y, 'Fecha de nacimiento', formatBirthdate(detail.birthdate));
+    y = this.addPdfField(pdf, y, 'Aprobado por', this.getApprovedByName(detail));
+    if (profile) y = this.addPdfField(pdf, y, 'Calificación', `${profile.global_rating} / 5 (${profile.total_reviews} reseñas)`);
+
+    y = this.addPdfSection(pdf, y + 4, 'Vehículos registrados');
+    if (detail.cars?.length) {
+      detail.cars.forEach((car, index) => {
+        y = this.ensurePdfSpace(pdf, y, 16);
+        pdf.setFillColor(244, 247, 249);
+        pdf.roundedRect(margin, y - 4, pageWidth - margin * 2, 13, 2, 2, 'F');
+        pdf.setTextColor(13, 43, 66);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(10);
+        pdf.text(`${index + 1}. ${car.brand} ${car.model}`, margin + 4, y + 1);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(92, 106, 120);
+        pdf.text(`Placas: ${car.car_registration || 'Sin registro'} | Color: ${car.color || 'Sin registro'} | Capacidad: ${car.max_capacity || 'Sin registro'}`, margin + 4, y + 6);
+        y += 18;
+      });
+    } else {
+      y = this.addPdfField(pdf, y, 'Registro', 'Sin vehículos registrados');
+    }
+
+    const stats = this.state.selectedDriverStatistics();
+    if (stats) {
+      y = this.addPdfSection(pdf, y + 2, 'Resumen operativo');
+      for (const entry of toDisplayEntries(stats)) y = this.addPdfField(pdf, y, entry.key, entry.value);
+    }
+
+    const trips = this.state.driverTrips();
+    if (trips.length) {
+      y = this.addPdfSection(pdf, y + 2, 'Viajes recientes');
+      trips.forEach((ride, index) => {
+        y = this.ensurePdfSpace(pdf, y, 7);
+        pdf.setTextColor(13, 43, 66);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.text(`${index + 1}. Viaje ${getRideId(ride) ?? 'sin ID'} - ${getRideStatusLabel(ride)}`, margin, y);
+        y += 6;
+      });
+    }
+
+    const pages = pdf.getNumberOfPages();
+    for (let page = 1; page <= pages; page += 1) {
+      pdf.setPage(page);
+      pdf.setDrawColor(217, 225, 231);
+      pdf.line(margin, 286, pageWidth - margin, 286);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(110, 122, 133);
+      pdf.text('Documento confidencial - Uso exclusivo de LogiRed', margin, 291);
+      pdf.text(`Página ${page} de ${pages}`, pageWidth - margin, 291, { align: 'right' });
+    }
+
+    pdf.save(`Expediente_LogiRed_${detail.id_user}.pdf`);
+  }
+
+  private addPdfSection(pdf: jsPDF, y: number, title: string): number {
+    y = this.ensurePdfSpace(pdf, y, 14);
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    pdf.setDrawColor(20, 118, 137);
+    pdf.setLineWidth(0.8);
+    pdf.line(18, y, 25, y);
+    pdf.setTextColor(13, 43, 66);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text(title, 29, y + 1.5);
+    pdf.setDrawColor(217, 225, 231);
+    pdf.setLineWidth(0.2);
+    pdf.line(29, y, pageWidth - 18, y);
+    return y + 9;
+  }
+
+  private addPdfField(pdf: jsPDF, y: number, label: string, value: string | number): number {
+    const lines = pdf.splitTextToSize(String(value || 'Sin registro'), 110) as string[];
+    y = this.ensurePdfSpace(pdf, y, Math.max(7, lines.length * 4 + 3));
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8.5);
+    pdf.setTextColor(92, 106, 120);
+    pdf.text(`${label}:`, 18, y);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(13, 43, 66);
+    pdf.text(lines, 66, y);
+    return y + Math.max(7, lines.length * 4 + 3);
+  }
+
+  private ensurePdfSpace(pdf: jsPDF, y: number, required: number): number {
+    if (y + required <= 280) return y;
+    pdf.addPage();
+    return 22;
+  }
+
+  /** Legacy plain-text exporter retained temporarily for backward compatibility. */
+  private downloadLegacyDriverReport(): void {
     const detail = this.state.selectedDriverDetail();
     const profile = this.state.selectedDriverProfile();
     if (!detail) {
